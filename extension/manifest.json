@@ -1,0 +1,42 @@
+{
+  "manifest_version": 3,
+  "name": "Fantasy Draft Assistant",
+  "version": "1.0",
+  "description": "AI-powered fantasy football draft assistant with ESPN integration",
+  
+  "permissions": [
+    "activeTab",
+    "storage",
+    "scripting"
+  ],
+  
+  "host_permissions": [
+    "https://fantasy.espn.com/*",
+    "https://api.openai.com/*"
+  ],
+  
+  "content_scripts": [
+    {
+      "matches": ["https://fantasy.espn.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_end",
+      "all_frames": true
+    }
+  ],
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Fantasy Draft Assistant"
+  },
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["popup.html", "popup.css", "popup.js", "dom-inspector.js"],
+      "matches": ["https://fantasy.espn.com/*"]
+    }
+  ]
+}

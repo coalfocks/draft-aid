@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fantasy Draft Assistant</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header class="header">
+      <h1>🏈 Fantasy Draft Assistant</h1>
+      <div class="status-bar">
+        <span id="draft-status">Draft Status: Loading...</span>
+        <span id="current-pick">Pick: --</span>
+      </div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="draft">Draft Board</button>
+      <button class="tab-btn" data-tab="chat">AI Chat</button>
+      <button class="tab-btn" data-tab="settings">Settings</button>
+    </div>
+
+    <!-- Draft Board Tab -->
+    <div id="draft-tab" class="tab-content active">
+      <div class="section">
+        <h3>Recent Picks</h3>
+        <div id="recent-picks" class="picks-container">
+          <div class="no-data">No picks detected yet</div>
+        </div>
+        <button id="refresh-picks" class="btn btn-secondary">🔄 Refresh</button>
+      </div>
+
+      <div class="section">
+        <h3>My Team (<span id="my-team-count">0</span>)</h3>
+        <div id="my-team" class="players-list">
+          <div class="no-data">No players on your team yet</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>Watch List (<span id="watchlist-count">0</span>)</h3>
+        <div class="add-player-form">
+          <input type="text" id="player-name-input" placeholder="Player name">
+          <select id="position-select">
+            <option value="QB">QB</option>
+            <option value="RB">RB</option>
+            <option value="WR">WR</option>
+            <option value="TE">TE</option>
+            <option value="K">K</option>
+            <option value="DST">DST</option>
+          </select>
+          <button id="add-to-watchlist" class="btn btn-primary">Add</button>
+        </div>
+        <div id="watchlist" class="players-list">
+          <div class="no-data">No players on watch list</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Chat Tab -->
+    <div id="chat-tab" class="tab-content">
+      <div class="section">
+        <h3 style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+          <span>AI Draft Assistant</span>
+          <button id="reset-chat" class="btn btn-secondary" title="Reset chat to baseline">Reset Chat</button>
+        </h3>
+        <div id="chat-messages" class="chat-messages">
+          <div class="chat-message ai">
+            <strong>AI:</strong> Hi! I'm your draft assistant. Ask me about players, strategy, or upload screenshots for analysis!
+          </div>
+        </div>
+        <div class="chat-input-container">
+          <input type="text" id="chat-input" placeholder="Ask about players, strategy, etc...">
+          <button id="send-chat" class="btn btn-primary">Send</button>
+        </div>
+        <div class="file-upload">
+          <input type="file" id="image-upload" accept="image/*" style="display: none;">
+          <button id="upload-btn" class="btn btn-secondary">📷 Upload Screenshot</button>
+        </div>
+      </div>
+      
+      <div class="section">
+        <h3>Image Gallery (<span id="image-count">0</span>)</h3>
+        <div id="image-gallery" class="image-gallery">
+          <div class="no-data">No images uploaded yet</div>
+        </div>
+        <button id="clear-images" class="btn btn-secondary" style="margin-top: 10px;">🗑️ Clear All Images</button>
+      </div>
+    </div>
+
+    <!-- Settings Tab -->
+    <div id="settings-tab" class="tab-content">
+      <div class="section">
+        <h3>Configuration</h3>
+        
+        <div class="setting-group">
+          <label for="openai-key">OpenAI API Key:</label>
+          <input type="password" id="openai-key" placeholder="sk-...">
+          <small>Required for AI chat functionality</small>
+        </div>
+
+        <div class="setting-group">
+          <label for="my-team-name">My Team Name:</label>
+          <input type="text" id="my-team-name" placeholder="Enter your team name">
+        </div>
+
+        <div class="setting-group">
+          <label>Draft Position:</label>
+          <select id="draft-position">
+            <option value="">Select position</option>
+            <option value="1">1st</option>
+            <option value="2">2nd</option>
+            <option value="3">3rd</option>
+            <option value="4">4th</option>
+            <option value="5">5th</option>
+            <option value="6">6th</option>
+            <option value="7">7th</option>
+            <option value="8">8th</option>
+            <option value="9">9th</option>
+            <option value="10">10th</option>
+            <option value="11">11th</option>
+            <option value="12">12th</option>
+          </select>
+        </div>
+
+        <div class="setting-group">
+          <label for="chat-model">Chat Model (speed vs quality):</label>
+          <select id="chat-model">
+            <option value="gpt-4o-mini">Fast (gpt-4o-mini)</option>
+            <option value="gpt-4o">Quality (gpt-4o)</option>
+          </select>
+          <small>Applies to text chat only. Vision stays on gpt-4o.</small>
+        </div>
+
+        <button id="save-settings" class="btn btn-primary">Save Settings</button>
+      </div>
+
+      <div class="section">
+        <h3>Debug Info</h3>
+        <div id="debug-info" class="debug-info">
+          <div>League ID: <span id="debug-league">--</span></div>
+          <div>Total Picks: <span id="debug-picks">--</span></div>
+          <div>Teams Found: <span id="debug-teams">--</span></div>
+          <div>Page URL: <span id="debug-url">--</span></div>
+        </div>
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <button id="debug-dom" class="btn btn-secondary">Debug DOM</button>
+          <button id="force-extract" class="btn btn-secondary">Force Extract</button>
+          <button id="export-data" class="btn btn-secondary">Export Data</button>
+        </div>
+        <div id="debug-log" style="max-height: 100px; overflow-y: auto; background: #f8f9fa; padding: 8px; font-size: 11px; font-family: monospace;">
+          <div>Debug logs will appear here...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
