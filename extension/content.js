@@ -291,8 +291,12 @@ function extractFromDraftColumn(draftColumn) {
     return extractFromAlternativeStructures();
   }
 
-  const liNodes = ul.querySelectorAll(':scope > li');
-  console.log(`📋 Found ${liNodes.length} li items in picks list`);
+  // Prefer only actual pick items
+  let liNodes = ul.querySelectorAll(':scope > li[class*="pick-message__container"], :scope > li.pick-message__container');
+  if (liNodes.length === 0) {
+    liNodes = ul.querySelectorAll(':scope > li');
+  }
+  console.log(`📋 Found ${liNodes.length} pick li items in picks list`);
 
   const picks = [];
   const totalTeams = draftData.teams?.length || 12;
@@ -389,6 +393,8 @@ function extractFromDraftColumn(draftColumn) {
     });
   }
 
+  // Ensure sequential pick numbers 1..N regardless of round
+  picks.forEach((p, i) => { p.pickNumber = i + 1; });
   console.log(`📊 Extracted ${picks.length} picks using structured approach`);
   updateDraftState(picks);
   return picks;

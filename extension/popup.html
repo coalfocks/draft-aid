@@ -102,6 +102,18 @@
         </div>
 
         <div class="setting-group">
+          <label for="google-key">Google API Key (Gemini):</label>
+          <input type="password" id="google-key" placeholder="AIza...">
+          <small>Needed for Gemini models</small>
+        </div>
+
+        <div class="setting-group">
+          <label for="groq-key">Groq API Key:</label>
+          <input type="password" id="groq-key" placeholder="gsk_...">
+          <small>Needed for Groq models</small>
+        </div>
+
+        <div class="setting-group">
           <label for="my-team-name">My Team Name:</label>
           <input type="text" id="my-team-name" placeholder="Enter your team name">
         </div>
@@ -130,8 +142,22 @@
           <select id="chat-model">
             <option value="gpt-4o-mini">Fast (gpt-4o-mini)</option>
             <option value="gpt-4o">Quality (gpt-4o)</option>
+            <option value="gpt-4.1-mini">OpenAI gpt-4.1-mini</option>
+            <option value="gemini-2.5-pro">Google Gemini 2.5 Pro</option>
+            <option value="gemini-2.5-flash">Google Gemini 2.5 Flash</option>
+            <option value="deepseek-r1-distill-llama-70b">Groq Deepseek r1</option>
+            <option value="llama-3.1-8b-instant">Groq LLaMA 3.1-8b instant</option>
+            <option value="openai/gpt-oss-120b">Groq openai/gpt-oss-120b</option>
+            <option value="openai/gpt-oss-20b">Groq openai/gpt-oss-20b</option>
+            <option value="moonshotai/kimi-k2-instruct">Groq moonshotai/kimi-k2-instruct</option>
+            <option value="qwen/qwen3-32">Groq qwen/qwen3-32</option>
           </select>
           <small>Applies to text chat only. Vision stays on gpt-4o.</small>
+        </div>
+
+        <div class="setting-group" style="display:flex; gap:8px;">
+          <button id="get-context" class="btn btn-secondary" type="button">Get Context</button>
+          <button id="reset-context" class="btn btn-secondary" type="button">Reset Context</button>
         </div>
 
         <button id="save-settings" class="btn btn-primary">Save Settings</button>

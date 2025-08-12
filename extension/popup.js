@@ -41,6 +41,8 @@ const elements = {
   imageUpload: document.getElementById('image-upload'),
   uploadBtn: document.getElementById('upload-btn'),
   openaiKey: document.getElementById('openai-key'),
+  googleKey: document.getElementById('google-key'),
+  groqKey: document.getElementById('groq-key'),
   myTeamName: document.getElementById('my-team-name'),
   draftPosition: document.getElementById('draft-position'),
   chatModel: document.getElementById('chat-model'),
@@ -48,6 +50,8 @@ const elements = {
   exportDataBtn: document.getElementById('export-data'),
   debugDomBtn: document.getElementById('debug-dom'),
   forceExtractBtn: document.getElementById('force-extract'),
+  getContextBtn: document.getElementById('get-context'),
+  resetContextBtn: document.getElementById('reset-context'),
   debugLeague: document.getElementById('debug-league'),
   debugPicks: document.getElementById('debug-picks'),
   debugTeams: document.getElementById('debug-teams'),
@@ -80,7 +84,7 @@ async function initialize() {
 
 // Load settings from storage
 async function loadSettings() {
-  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount']);
+  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount']);
   
   // Load from either settings object or direct key
   const apiKey = result.openaiApiKey || result.settings?.openaiApiKey;
@@ -121,6 +125,8 @@ async function loadSettings() {
   
   // Populate settings form
   if (elements.openaiKey) elements.openaiKey.value = settings.openaiApiKey || '';
+  if (elements.googleKey) elements.googleKey.value = result.googleApiKey || settings.googleApiKey || '';
+  if (elements.groqKey) elements.groqKey.value = result.groqApiKey || settings.groqApiKey || '';
   if (elements.myTeamName) elements.myTeamName.value = settings.myTeamName || '';
   if (elements.draftPosition) elements.draftPosition.value = settings.draftPosition || '';
   if (elements.chatModel) elements.chatModel.value = settings.chatModel || 'gpt-4o-mini';
@@ -189,11 +195,35 @@ function requestDraftData() {
   });
 }
 
+// Clear current picks and force content to re-extract, then sync UI
+function refreshAndSync() {
+  // Clear picks locally and in background to prevent duplication
+  draftState.picks = [];
+  draftState.currentPick = 1;
+  updateUI();
+  chrome.runtime.sendMessage({ type: 'REPLACE_PICKS', data: [] }).catch(() => {});
+
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (!tab || !tab.url.includes('fantasy.espn.com')) return;
+    chrome.tabs.sendMessage(tab.id, { type: 'REFRESH_DATA' }, (response) => {
+      if (chrome.runtime.lastError) {
+        // Fallback to generic request
+        return requestDraftData();
+      }
+      if (response) {
+        draftState = { ...draftState, ...response };
+        updateUI();
+      }
+    });
+  });
+}
+
 // Set up event listeners
 function setupEventListeners() {
   // Draft board actions
   elements.addToWatchlistBtn?.addEventListener('click', addToWatchlist);
-  elements.refreshPicksBtn?.addEventListener('click', requestDraftData);
+  elements.refreshPicksBtn?.addEventListener('click', refreshAndSync);
   
   // Chat actions
   elements.sendChatBtn?.addEventListener('click', sendChatMessage);
@@ -209,6 +239,21 @@ function setupEventListeners() {
   elements.exportDataBtn?.addEventListener('click', exportData);
   elements.debugDomBtn?.addEventListener('click', debugDom);
   elements.forceExtractBtn?.addEventListener('click', forceExtract);
+  elements.getContextBtn?.addEventListener('click', async () => {
+    const ctx = await chrome.runtime.sendMessage({ type: 'GET_CONTEXT' });
+    const w = window.open('', '_blank', 'width=600,height=800,scrollbars=yes');
+    if (w) {
+      w.document.write(`<pre style="white-space: pre-wrap; word-wrap: break-word; font-size:12px;">${
+        ctx ? JSON.stringify(ctx, null, 2) : 'No context'
+      }</pre>`);
+    } else {
+      alert('Context window blocked by popup blocker');
+    }
+  });
+  elements.resetContextBtn?.addEventListener('click', async () => {
+    await chrome.runtime.sendMessage({ type: 'RESET_CONTEXT' });
+    alert('Context reset.');
+  });
   
   // Image gallery actions
   elements.clearImagesBtn?.addEventListener('click', clearAllImages);
@@ -271,6 +316,14 @@ function updateUI() {
   
   // Update debug info
   updateDebugInfo();
+  // Keep background context in sync (myTeam and draftedPlayers)
+  chrome.runtime.sendMessage({
+    type: 'UPDATE_CONTEXT_PARTIAL',
+    data: {
+      myTeam: draftState.myTeam.map(p => p.name),
+      draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+    }
+  }).catch(() => {});
 }
 
 // Update recent picks display
@@ -864,7 +917,7 @@ async function sendChatMessage() {
     leagueId: draftState.leagueId
   });
   
-  // Build comprehensive draft context
+  // Build comprehensive draft context (will be augmented with compact context in background)
   const pickInfo = getNextPickInfo();
   const totalPicks = draftState.picks?.length || 0;
   const myTeamPlayers = draftState.myTeam || [];
@@ -1035,7 +1088,7 @@ function addChatMessage(sender, message, isImageAnalysis = false) {
   
   const messageDiv = document.createElement('div');
   messageDiv.className = `chat-message ${sender}`;
-  messageDiv.innerHTML = `<strong>${sender === 'user' ? 'You' : 'AI'}:</strong> ${message}`;
+  messageDiv.innerHTML = `<strong>${sender === 'user' ? 'You' : 'AI'}:</strong> ${linkifyAndEscape(message)}`;
   
   elements.chatMessages.appendChild(messageDiv);
   elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
@@ -1052,6 +1105,28 @@ function addChatMessage(sender, message, isImageAnalysis = false) {
   
   // Save to storage
   chrome.storage.local.set({ chatHistory: chatHistory });
+}
+
+// Safely convert plain URLs to clickable 'link' anchors and escape other HTML
+function linkifyAndEscape(text) {
+  const escapeHtml = (str) => str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  const urlRegex = /(https?:\/\/[\w\-._~:/?#[\]@!$&'()*+,;=%]+)|(www\.[\w\-._~:/?#[\]@!$&'()*+,;=%]+)/gi;
+  let out = '';
+  let last = 0;
+  String(text || '').replace(urlRegex, (match, p1, p2, offset) => {
+    out += escapeHtml(text.slice(last, offset));
+    const url = p1 ? p1 : `http://${p2}`;
+    out += `<a href="${url}" target="_blank" rel="noopener">link</a>`;
+    last = offset + match.length;
+    return match;
+  });
+  out += escapeHtml(String(text || '').slice(last));
+  return out;
 }
 
 // Handle image upload
@@ -1170,6 +1245,8 @@ DO NOT use pre-trained knowledge about players if it contradicts the image data.
 // Save settings
 async function saveSettings() {
   settings.openaiApiKey = elements.openaiKey?.value || '';
+  settings.googleApiKey = elements.googleKey?.value || '';
+  settings.groqApiKey = elements.groqKey?.value || '';
   settings.myTeamName = elements.myTeamName?.value || '';
   settings.draftPosition = elements.draftPosition?.value || '';
   settings.chatModel = elements.chatModel?.value || 'gpt-4o-mini';
@@ -1179,7 +1256,9 @@ async function saveSettings() {
   try {
     await chrome.storage.local.set({ 
       settings: settings,
-      openaiApiKey: settings.openaiApiKey // Also save separately for background script
+      openaiApiKey: settings.openaiApiKey, // Also save separately for background script
+      googleApiKey: settings.googleApiKey,
+      groqApiKey: settings.groqApiKey
     });
     console.log('✅ Settings saved successfully');
     
