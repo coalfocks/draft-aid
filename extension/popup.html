@@ -64,7 +64,10 @@
       <div class="section">
         <h3 style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
           <span>AI Draft Assistant</span>
-          <button id="reset-chat" class="btn btn-secondary" title="Reset chat to baseline">Reset Chat</button>
+          <div style="display:flex; gap:4px;">
+            <button id="truncate-chat" class="btn btn-secondary" title="Keep only recent messages">Truncate History</button>
+            <button id="reset-chat" class="btn btn-secondary" title="Reset chat to baseline">Reset Chat</button>
+          </div>
         </h3>
         <div id="chat-messages" class="chat-messages">
           <div class="chat-message ai">
@@ -78,7 +81,12 @@
         <div class="file-upload">
           <input type="file" id="image-upload" accept="image/*" style="display: none;">
           <button id="upload-btn" class="btn btn-secondary">📷 Upload Screenshot</button>
+          <input type="file" id="csv-upload" accept=".csv,text/csv" style="display: none;">
+          <button id="csv-upload-btn" class="btn btn-secondary">📄 Upload CSV</button>
+          <span id="csv-count" class="badge" title="CSV datasets loaded" style="display:none;">CSVs: 0</span>
+          <button id="clear-csvs" class="link-btn" style="display:none;">Clear all</button>
         </div>
+        <div id="csv-chips" class="csv-chips" style="margin-top:8px;"></div>
       </div>
       
       <div class="section">
@@ -145,12 +153,12 @@
             <option value="gpt-4.1-mini">OpenAI gpt-4.1-mini</option>
             <option value="gemini-2.5-pro">Google Gemini 2.5 Pro</option>
             <option value="gemini-2.5-flash">Google Gemini 2.5 Flash</option>
-            <option value="deepseek-r1-distill-llama-70b">Groq Deepseek r1</option>
-            <option value="llama-3.1-8b-instant">Groq LLaMA 3.1-8b instant</option>
-            <option value="openai/gpt-oss-120b">Groq openai/gpt-oss-120b</option>
-            <option value="openai/gpt-oss-20b">Groq openai/gpt-oss-20b</option>
-            <option value="moonshotai/kimi-k2-instruct">Groq moonshotai/kimi-k2-instruct</option>
-            <option value="qwen/qwen3-32">Groq qwen/qwen3-32</option>
+            <option value="groq-deepseek-r1-distill-llama-70b">Groq Deepseek r1</option>
+            <option value="groq-llama-3.1-8b-instant">Groq LLaMA 3.1-8b instant</option>
+            <option value="groq-openai/gpt-oss-120b">Groq openai/gpt-oss-120b</option>
+            <option value="groq-openai/gpt-oss-20b">Groq openai/gpt-oss-20b</option>
+            <option value="groq-moonshotai/kimi-k2-instruct">Groq moonshotai/kimi-k2-instruct</option>
+            <option value="groq-qwen/qwen3-32">Groq qwen/qwen3-32</option>
           </select>
           <small>Applies to text chat only. Vision stays on gpt-4o.</small>
         </div>

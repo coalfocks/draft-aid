@@ -19,6 +19,7 @@ let context = {
   myTeam: [], // ["Player Name", ...]
   draftedPlayers: [], // ["Player Name", ...]
   screenshots: {}, // id -> { name, type, dataDump, summary, timestamp }
+  csvDatasets: {}, // id -> { id, name, columns, normalizedColumns, rows, timestamp }
   lastUpdated: null
 };
 
@@ -102,6 +103,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (request.data.screenshots && typeof request.data.screenshots === 'object') {
           context.screenshots = { ...context.screenshots, ...request.data.screenshots };
         }
+        if (request.data.csvDatasets && typeof request.data.csvDatasets === 'object') {
+          context.csvDatasets = { ...context.csvDatasets, ...request.data.csvDatasets };
+        }
         context.lastUpdated = Date.now();
         saveContextToStorage();
       }
@@ -122,7 +126,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       
     case 'OPENAI_REQUEST':
       // Handle OpenAI API requests
-      handleOpenAIRequest(request.data, sendResponse);
+      handleOpenAIRequest(request.data, sendResponse, request.messageId);
       return true; // Keep message channel open for async response
       
     case 'OPENAI_VISION_REQUEST':
@@ -304,18 +308,22 @@ async function getAllDraftData() {
 }
 
 // Handle OpenAI API requests
-async function handleOpenAIRequest(requestData, sendResponse) {
+async function handleOpenAIRequest(requestData, sendResponse, messageId) {
   try {
     // Get keys from storage
-    const result = await chrome.storage.local.get(['openaiApiKey', 'googleApiKey', 'groqApiKey', 'settings']);
+    const result = await chrome.storage.local.get(['openaiApiKey', 'googleApiKey', 'groqApiKey', 'settings', 'pendingChatMessage']);
     
     // Choose model: prefer settings.chatModel for text chat, fallback to gpt-4o-mini
-    const chatModel = result.settings?.chatModel || 'gpt-4o-mini';
-    
-    // Determine provider and API URL/headers
-    let provider = 'openai';
-    if (chatModel.startsWith('groq-')) provider = 'groq';
-    else if (chatModel.startsWith('gemini-')) provider = 'gemini';
+    const chatModel = (result.settings?.chatModel || 'gpt-4o-mini').trim();
+
+    // Simple, explicit routing:
+    // - If model starts with 'groq-', route to Groq and strip the prefix before sending
+    // - Else if starts with 'gemini-', route to Gemini
+    // - Else route to OpenAI
+    const isGroq = chatModel.startsWith('groq-');
+    const isGemini = chatModel.startsWith('gemini-');
+    const provider = isGroq ? 'groq' : (isGemini ? 'gemini' : 'openai');
+    const modelForApi = isGroq ? chatModel.replace(/^groq-/, '') : chatModel;
 
     let apiUrl = 'https://api.openai.com/v1/chat/completions';
     let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${result.openaiApiKey || result.settings?.openaiApiKey || ''}` };
@@ -324,7 +332,8 @@ async function handleOpenAIRequest(requestData, sendResponse) {
       apiUrl = 'https://api.groq.com/openai/v1/chat/completions';
       const groqKey = result.groqApiKey || result.settings?.groqApiKey;
       if (!groqKey) {
-        sendResponse({ success: false, error: 'Groq API key not configured.' });
+        console.error('Groq selected but API key missing. Model:', chatModel);
+        sendResponse({ success: false, error: 'Groq API key not configured.', model: chatModel, provider: 'groq' });
         return;
       }
       headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` };
@@ -334,19 +343,49 @@ async function handleOpenAIRequest(requestData, sendResponse) {
       apiUrl = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
       const googleKey = result.googleApiKey || result.settings?.googleApiKey;
       if (!googleKey) {
-        sendResponse({ success: false, error: 'Google API key not configured.' });
+        console.error('Gemini selected but API key missing. Model:', chatModel);
+        sendResponse({ success: false, error: 'Google API key not configured.', model: chatModel, provider: 'gemini' });
         return;
       }
       headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${googleKey}` };
     }
 
-    // Build compact context for the model
+    console.log('🔧 LLM routing:', { provider, apiUrl, modelConfigured: chatModel, modelSent: modelForApi });
+
+    // Build context for the model - include actual CSV data for rankings
+    const csvDatasets = Object.values(context.csvDatasets || {}).slice(0, 2);
     const compactContext = {
-      leagueId: context.leagueId,
-      userTeamName: context.userTeamName,
-      myTeam: (context.myTeam || []).slice(-20),
-      draftedPlayers: (context.draftedPlayers || []).slice(-50),
-      screenshots: Object.fromEntries(Object.entries(context.screenshots || {}).slice(-3))
+      myTeam: (context.myTeam || []).slice(-15).join(', '),
+      draftedCount: (context.draftedPlayers || []).length,
+      recentDrafted: (context.draftedPlayers || []).slice(-20).join(', '),
+      // Include full screenshot data if available
+      lastScreenshot: context.screenshots ? Object.values(context.screenshots).slice(-1)[0] : null,
+      // Include actual CSV data for rankings (all rows, optimized for tokens)
+      csvData: csvDatasets.length > 0 ? csvDatasets.map(ds => ({
+        name: ds.name,
+        // Include all rows but only essential columns
+        data: (ds.rows || []).map(row => {
+          // Only include key columns to save tokens
+          const compact = {};
+          // Primary identifiers
+          ['player', 'name', 'player_name', 'full_name'].forEach(col => {
+            if (row[col] !== undefined && !compact.name) compact.name = row[col];
+          });
+          // Position
+          ['position', 'pos'].forEach(col => {
+            if (row[col] !== undefined && !compact.pos) compact.pos = row[col];
+          });
+          // Rankings/scoring
+          ['rank', 'ranking', 'overall_rank', 'tier', 'points', 'projection', 'proj', 'value', 'adp'].forEach(col => {
+            if (row[col] !== undefined) compact[col] = row[col];
+          });
+          // Team if available
+          ['team', 'tm'].forEach(col => {
+            if (row[col] !== undefined && !compact.team) compact.team = row[col];
+          });
+          return compact;
+        }).filter(row => row.name) // Only keep rows with valid player names
+      })) : null
     };
 
     // Tools exposed to the model via tool_calls proxy (the extension will handle these)
@@ -366,11 +405,38 @@ async function handleOpenAIRequest(requestData, sendResponse) {
           description: 'Search recent fantasy-relevant ESPN headlines for a query',
           parameters: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] }
         }
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'fetch_team_starters',
+          description: 'Fetch ESPN depth chart starters for an NFL team (QB, RB, TE, WRs). Use team abbreviation like PHI, KC, DAL.',
+          parameters: { type: 'object', properties: { teamAbbr: { type: 'string' } }, required: ['teamAbbr'] }
+        }
       }
     ];
 
+    const systemPrompt = `Fantasy draft assistant. Be concise (2-3 sentences max).
+
+INFORMATION PRIORITY:
+1. CONTEXT.csvData - User's uploaded rankings (if available, use EXCLUSIVELY for rankings)
+2. CONTEXT.lastScreenshot - Recent screenshot analysis (trust completely)
+3. Tool results - Current injury/news data
+4. Pre-trained knowledge - Use ONLY if no CSV/screenshot data exists
+
+RULES:
+- If CSV data exists: use it exclusively for rankings/tiers
+- If no CSV data: can use general fantasy knowledge, but mention "Based on consensus rankings..."
+- Check CONTEXT.recentDrafted before recommending ANY player
+- NEVER recommend already drafted players
+- For injuries/trades: always use tools or say "I'll check current info"
+
+CONTEXT contains: myTeam, draftedCount, recentDrafted, lastScreenshot, csvData
+
+Tools: fetch_player_injury_news, search_fantasy_news, fetch_team_starters`;
+
     let messages = [
-      { role: 'system', content: 'You will be given a compact JSON context named CONTEXT. Use it to avoid suggesting already-drafted players and to tailor advice to the user\'s team. Prefer using available tools when unsure about injuries or recent news.' },
+      { role: 'system', content: systemPrompt },
       { role: 'system', content: `CONTEXT: ${JSON.stringify(compactContext)}` },
       ...requestData.messages
     ];
@@ -380,7 +446,7 @@ async function handleOpenAIRequest(requestData, sendResponse) {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: chatModel,
+        model: modelForApi,
         messages,
         max_tokens: 1500,
         temperature: 0.7,
@@ -391,8 +457,17 @@ async function handleOpenAIRequest(requestData, sendResponse) {
 
     const initialText = await response.text();
     let initial;
-    try { initial = JSON.parse(initialText); } catch { initial = { raw: initialText }; }
-    if (!response.ok) throw new Error(initial.error?.message || 'OpenAI API error');
+    try { 
+      initial = JSON.parse(initialText); 
+    } catch (e) { 
+      console.error('Failed to parse response as JSON:', e, 'Raw text:', initialText);
+      initial = { raw: initialText }; 
+    }
+    
+    if (!response.ok) {
+      console.error('API error response:', response.status, initial);
+      throw new Error(initial.error?.message || `${provider} API error: ${response.status}`);
+    }
 
     // Handle function calls (one round, simple)
     const toolCalls = initial.choices?.[0]?.message?.tool_calls || [];
@@ -408,6 +483,8 @@ async function handleOpenAIRequest(requestData, sendResponse) {
           result = await fetchPlayerInjuryNews(args.player);
         } else if (name === 'search_fantasy_news') {
           result = await fetchFantasyNews(args.query);
+        } else if (name === 'fetch_team_starters') {
+          result = await fetchTeamStarters(args.teamAbbr);
         } else {
           result = { error: `Unknown tool ${name}` };
         }
@@ -419,7 +496,7 @@ async function handleOpenAIRequest(requestData, sendResponse) {
         method: 'POST',
         headers,
         body: JSON.stringify({
-          model: chatModel,
+          model: modelForApi,
           messages: [ ...messages, initial.choices[0].message, ...toolMessages ],
           max_tokens: 1500,
           temperature: 0.7
@@ -432,10 +509,61 @@ async function handleOpenAIRequest(requestData, sendResponse) {
       }
     }
     
-    sendResponse({ success: true, data: data.choices?.[0]?.message?.content || data.raw || '' });
+    // Handle different response formats for different providers
+    let responseContent = '';
+    if (data.choices && data.choices[0] && data.choices[0].message) {
+      responseContent = data.choices[0].message.content || '';
+    } else if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+      // Gemini native format
+      responseContent = data.candidates[0].content.parts?.[0]?.text || '';
+    } else if (typeof data === 'string') {
+      responseContent = data;
+    } else {
+      responseContent = data.raw || '';
+    }
+    
+    // Validate response is not empty
+    if (!responseContent || responseContent.trim() === '') {
+      console.error('Empty response from LLM. Provider:', provider, 'Model:', modelForApi, 'Full response:', data);
+      sendResponse({ 
+        success: false, 
+        error: `Received empty response from ${provider}. Please try a different model.` 
+      });
+      return;
+    }
+    
+    // Store the response for when popup reopens
+    if (messageId && result.pendingChatMessage && result.pendingChatMessage.id === messageId) {
+      const responseData = {
+        messageId: messageId,
+        response: responseContent,
+        timestamp: Date.now(),
+        success: true
+      };
+      
+      chrome.storage.local.set({ 
+        pendingChatResponse: responseData,
+        pendingChatMessage: null // Clear the pending message
+      });
+      
+      // Try to show notification if popup is closed
+      chrome.windows.getCurrent((window) => {
+        if (!window.focused) {
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: chrome.runtime.getURL('logo192.png'),
+            title: 'Fantasy Draft Assistant',
+            message: 'Your AI response is ready!',
+            priority: 2
+          });
+        }
+      });
+    }
+    
+    sendResponse({ success: true, data: responseContent });
     
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('OpenAI/Groq/Gemini API error:', error);
     sendResponse({
       success: false,
       error: error.message
@@ -507,9 +635,21 @@ async function handleOpenAIVisionRequest(requestData, sendResponse) {
     
     console.log('✅ Vision API response received');
     
+    const visionContent = data.choices?.[0]?.message?.content || '';
+    
+    // Validate vision response
+    if (!visionContent || visionContent.trim() === '') {
+      console.error('Empty vision response:', data);
+      sendResponse({
+        success: false,
+        error: 'Received empty response from vision API. Please try again.'
+      });
+      return;
+    }
+    
     sendResponse({
       success: true,
-      data: data.choices[0].message.content
+      data: visionContent
     });
     
   } catch (error) {

@@ -19,8 +19,11 @@ let settings = {
 
 let chatHistory = [];
 let uploadedImages = [];
+let csvDatasets = {}; // id -> { id, name, columns, normalizedColumns, rows, timestamp }
 let lastLeagueId = null;
 let lastPickCount = null;
+let chatErrorState = false; // Track if chat is in error state
+let lastErrorTime = null;
 
 // DOM Elements
 const elements = {
@@ -40,6 +43,11 @@ const elements = {
   sendChatBtn: document.getElementById('send-chat'),
   imageUpload: document.getElementById('image-upload'),
   uploadBtn: document.getElementById('upload-btn'),
+  csvUpload: document.getElementById('csv-upload'),
+  csvUploadBtn: document.getElementById('csv-upload-btn'),
+  csvCount: document.getElementById('csv-count'),
+  clearCsvsBtn: document.getElementById('clear-csvs'),
+  csvChips: document.getElementById('csv-chips'),
   openaiKey: document.getElementById('openai-key'),
   googleKey: document.getElementById('google-key'),
   groqKey: document.getElementById('groq-key'),
@@ -60,7 +68,8 @@ const elements = {
   imageGallery: document.getElementById('image-gallery'),
   imageCount: document.getElementById('image-count'),
   clearImagesBtn: document.getElementById('clear-images'),
-  resetChatBtn: document.getElementById('reset-chat')
+  resetChatBtn: document.getElementById('reset-chat'),
+  truncateChatBtn: document.getElementById('truncate-chat')
 };
 
 // Initialize popup
@@ -80,11 +89,18 @@ async function initialize() {
   
   // Update UI
   updateUI();
+  
+  // Set up auto-refresh for draft picks every 10 seconds
+  setInterval(() => {
+    if (draftState.leagueId) { // Only refresh if we're in a draft
+      requestDraftData();
+    }
+  }, 10000);
 }
 
 // Load settings from storage
 async function loadSettings() {
-  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount']);
+  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount', 'csvDatasets', 'pendingChatResponse']);
   
   // Load from either settings object or direct key
   const apiKey = result.openaiApiKey || result.settings?.openaiApiKey;
@@ -104,10 +120,44 @@ async function loadSettings() {
     restoreChatHistory();
   }
   
+  // Check for pending response
+  if (result.pendingChatResponse) {
+    // Add the pending response to chat
+    setTimeout(() => {
+      addChatMessage('ai', result.pendingChatResponse.response);
+      // Show notification that response was loaded
+      const notificationDiv = document.createElement('div');
+      notificationDiv.className = 'chat-notification';
+      notificationDiv.textContent = '✓ Response received while you were away';
+      notificationDiv.style.cssText = 'background: #28a745; color: white; padding: 8px; border-radius: 4px; margin: 8px; text-align: center;';
+      elements.chatMessages?.insertBefore(notificationDiv, elements.chatMessages.firstChild);
+      
+      // Remove notification after 3 seconds
+      setTimeout(() => {
+        if (notificationDiv.parentNode) {
+          notificationDiv.parentNode.removeChild(notificationDiv);
+        }
+      }, 3000);
+    }, 500);
+    
+    // Clear the pending response
+    chrome.storage.local.remove('pendingChatResponse');
+  }
+  
   // Load uploaded images
   if (result.uploadedImages) {
     uploadedImages = result.uploadedImages;
     updateImageGallery();
+  }
+  // Load CSV datasets
+  if (result.csvDatasets && typeof result.csvDatasets === 'object') {
+    csvDatasets = result.csvDatasets;
+    updateCsvUI();
+    // Share with background so it's in context immediately
+    chrome.runtime.sendMessage({
+      type: 'UPDATE_CONTEXT_PARTIAL',
+      data: { csvDatasets }
+    }).catch(() => {});
   }
   if (result.lastLeagueId) {
     lastLeagueId = result.lastLeagueId;
@@ -120,7 +170,8 @@ async function loadSettings() {
     hasApiKey: !!settings.openaiApiKey, 
     teamName: settings.myTeamName,
     chatMessages: chatHistory.length,
-    images: uploadedImages.length
+    images: uploadedImages.length,
+    hasPendingResponse: !!result.pendingChatResponse
   });
   
   // Populate settings form
@@ -197,24 +248,48 @@ function requestDraftData() {
 
 // Clear current picks and force content to re-extract, then sync UI
 function refreshAndSync() {
-  // Clear picks locally and in background to prevent duplication
-  draftState.picks = [];
-  draftState.currentPick = 1;
-  updateUI();
-  chrome.runtime.sendMessage({ type: 'REPLACE_PICKS', data: [] }).catch(() => {});
-
+  // Show loading state
+  if (elements.refreshPicksBtn) {
+    elements.refreshPicksBtn.disabled = true;
+    elements.refreshPicksBtn.textContent = 'Refreshing...';
+  }
+  
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
-    if (!tab || !tab.url.includes('fantasy.espn.com')) return;
-    chrome.tabs.sendMessage(tab.id, { type: 'REFRESH_DATA' }, (response) => {
-      if (chrome.runtime.lastError) {
-        // Fallback to generic request
-        return requestDraftData();
+    if (!tab || !tab.url.includes('fantasy.espn.com')) {
+      // Reset button
+      if (elements.refreshPicksBtn) {
+        elements.refreshPicksBtn.disabled = false;
+        elements.refreshPicksBtn.textContent = 'Refresh Picks';
       }
-      if (response) {
-        draftState = { ...draftState, ...response };
-        updateUI();
-      }
+      return;
+    }
+    
+    // First ensure content script is loaded
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js']
+    }, () => {
+      // Small delay to let content script initialize
+      setTimeout(() => {
+        chrome.tabs.sendMessage(tab.id, { type: 'FORCE_EXTRACT' }, (response) => {
+          if (chrome.runtime.lastError) {
+            console.error('Refresh error:', chrome.runtime.lastError);
+            addDebugLog('Failed to refresh: ' + chrome.runtime.lastError.message);
+          } else if (response) {
+            // Update state with fresh data
+            draftState = { ...draftState, ...response };
+            updateUI();
+            addDebugLog(`Refreshed: ${response.picks?.length || 0} picks found`);
+          }
+          
+          // Reset button
+          if (elements.refreshPicksBtn) {
+            elements.refreshPicksBtn.disabled = false;
+            elements.refreshPicksBtn.textContent = 'Refresh Picks';
+          }
+        });
+      }, 500);
     });
   });
 }
@@ -231,8 +306,24 @@ function setupEventListeners() {
     if (e.key === 'Enter') sendChatMessage();
   });
   elements.resetChatBtn?.addEventListener('click', resetChatToBaseline);
+  elements.truncateChatBtn?.addEventListener('click', truncateChatHistory);
   elements.uploadBtn?.addEventListener('click', () => elements.imageUpload?.click());
   elements.imageUpload?.addEventListener('change', handleImageUpload);
+  elements.csvUploadBtn?.addEventListener('click', () => elements.csvUpload?.click());
+  elements.csvUpload?.addEventListener('change', handleCsvUpload);
+  elements.clearCsvsBtn?.addEventListener('click', clearAllCSVs);
+  // CSV chips: handle remove via event delegation
+  elements.csvChips?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip-btn');
+    if (!btn) return;
+    const id = btn.getAttribute('data-csv-id');
+    if (!id) return;
+    delete csvDatasets[id];
+    chrome.storage.local.set({ csvDatasets }).catch(() => {});
+    chrome.runtime.sendMessage({ type: 'UPDATE_CONTEXT_PARTIAL', data: { csvDatasets } }).catch(() => {});
+    updateCsvUI();
+    addDebugLog(`Removed CSV: ${btn.textContent.replace(/^×\s*/, '')}`);
+  });
   
   // Settings actions
   elements.saveSettingsBtn?.addEventListener('click', saveSettings);
@@ -261,13 +352,32 @@ function setupEventListeners() {
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.type === 'PICK_UPDATE') {
-      draftState.picks.push(request.data);
-      draftState.currentPick = draftState.picks.length + 1;
-      updateUI();
+      // Single pick update
+      if (!draftState.picks.some(p => p.pickNumber === request.data.pickNumber)) {
+        draftState.picks.push(request.data);
+        draftState.currentPick = draftState.picks.length + 1;
+        updateUI();
+        addDebugLog(`New pick #${request.data.pickNumber}: ${request.data.player?.name}`);
+      }
     } else if (request.type === 'PICKS_REPLACED') {
+      // Full picks replacement
+      const oldCount = draftState.picks.length;
       draftState.picks = request.data || [];
       draftState.currentPick = draftState.picks.length + 1;
       updateUI();
+      if (oldCount !== draftState.picks.length) {
+        addDebugLog(`Picks updated: ${oldCount} → ${draftState.picks.length}`);
+      }
+    } else if (request.type === 'DRAFT_UPDATE') {
+      // Full draft state update from content script
+      if (request.data) {
+        const oldPickCount = draftState.picks.length;
+        draftState = { ...draftState, ...request.data };
+        updateUI();
+        if (oldPickCount !== draftState.picks.length) {
+          addDebugLog(`Draft sync: ${oldPickCount} → ${draftState.picks.length} picks`);
+        }
+      }
     }
   });
 }
@@ -324,6 +434,147 @@ function updateUI() {
       draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
     }
   }).catch(() => {});
+  // Also update background with CSV presence
+  chrome.runtime.sendMessage({
+    type: 'UPDATE_CONTEXT_PARTIAL',
+    data: { csvDatasets }
+  }).catch(() => {});
+}
+function updateCsvBadge() {
+  if (!elements.csvCount) return;
+  const count = Object.keys(csvDatasets).length;
+  elements.csvCount.style.display = count > 0 ? 'inline-block' : 'none';
+  elements.csvCount.textContent = `CSVs: ${count}`;
+  const names = Object.values(csvDatasets).map(d => d.name).join(', ');
+  elements.csvCount.title = count > 0 ? `CSV datasets loaded: ${names}` : 'CSV datasets loaded';
+}
+
+function updateCsvChips() {
+  if (!elements.csvChips) return;
+  const list = Object.values(csvDatasets);
+  if (list.length === 0) {
+    elements.csvChips.innerHTML = '';
+    if (elements.clearCsvsBtn) elements.clearCsvsBtn.style.display = 'none';
+    return;
+  }
+  const escapeHtml = (str) => String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  elements.csvChips.innerHTML = list.map(ds => (
+    `<button class="chip-btn" data-csv-id="${ds.id}" title="Remove ${escapeHtml(ds.name)}">× ${escapeHtml(ds.name)}</button>`
+  )).join('');
+  if (elements.clearCsvsBtn) elements.clearCsvsBtn.style.display = 'inline';
+}
+
+function updateCsvUI() {
+  updateCsvBadge();
+  updateCsvChips();
+}
+
+function normalizeHeader(header, index) {
+  if (header == null) header = '';
+  const trimmed = String(header).trim().replace(/^"|"$/g, '');
+  let normalized = trimmed.toLowerCase().replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '');
+  if (!normalized) normalized = index === 0 ? 'index' : `col_${index + 1}`;
+  const aliasMap = { pos: 'position', plyr: 'player', ppr: 'points', proj: 'points', projection: 'points', projections: 'points', team_name: 'team' };
+  if (aliasMap[normalized]) normalized = aliasMap[normalized];
+  return normalized;
+}
+
+function parseCsvText(text) {
+  // Light CSV parse to avoid adding dependencies in extension
+  // Attempt to split lines and commas while respecting basic quotes
+  const rows = [];
+  let row = [];
+  let cell = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (inQuotes && text[i + 1] === '"') { // escaped quote
+        cell += '"'; i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === ',' && !inQuotes) {
+      row.push(cell); cell = '';
+    } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+      if (cell !== '' || row.length > 0) { row.push(cell); rows.push(row); }
+      row = []; cell = '';
+      // swallow \r\n pairs
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+    } else {
+      cell += ch;
+    }
+  }
+  if (cell !== '' || row.length > 0) { row.push(cell); rows.push(row); }
+
+  if (rows.length === 0) return { columns: [], normalizedColumns: [], rows: [], rawRowCount: 0 };
+  // Decide if first row is header: if any cell is non-numeric or has spaces/letters, treat as header
+  const headerRow = rows[0];
+  const likelyHeader = headerRow.some(c => /[A-Za-z]/.test(c));
+  let columns = [];
+  let normalizedColumns = [];
+  let dataRows = [];
+  if (likelyHeader) {
+    columns = headerRow.map(c => (c || '').replace(/^"|"$/g, ''));
+    normalizedColumns = columns.map((c, i) => normalizeHeader(c, i));
+    dataRows = rows.slice(1).map((r, ri) => {
+      const obj = {};
+      normalizedColumns.forEach((col, i) => { obj[col] = r[i]; });
+      if (Object.prototype.hasOwnProperty.call(obj, 'index') && (obj.index == null || obj.index === '')) obj.index = ri + 1;
+      return obj;
+    });
+  } else {
+    columns = headerRow.map((_, i) => `col_${i + 1}`);
+    normalizedColumns = columns.map((c, i) => normalizeHeader(c, i));
+    dataRows = rows.slice(1).map((r, ri) => {
+      const obj = {};
+      normalizedColumns.forEach((col, i) => { obj[col] = r[i]; });
+      if (Object.prototype.hasOwnProperty.call(obj, 'index') && (obj.index == null || obj.index === '')) obj.index = ri + 1;
+      return obj;
+    });
+  }
+
+  return { columns, normalizedColumns, rows: dataRows, rawRowCount: rows.length };
+}
+
+async function handleCsvUpload(event) {
+  const files = Array.from(event.target.files || []);
+  if (files.length === 0) return;
+
+  for (const file of files) {
+    try {
+      const text = await file.text();
+      const parsed = parseCsvText(text);
+      const id = `${file.name}_${Date.now()}`;
+      csvDatasets[id] = { id, name: file.name, ...parsed, timestamp: new Date().toISOString() };
+      addDebugLog(`CSV loaded: ${file.name} — rows: ${parsed.rows.length}, cols: ${parsed.normalizedColumns.length}`);
+    } catch (e) {
+      console.error('CSV parse error:', e);
+      addDebugLog(`CSV parse error: ${e.message}`);
+    }
+  }
+  // Persist to storage for background usage
+  chrome.storage.local.set({ csvDatasets }).catch(() => {});
+  // Push to background context immediately
+  chrome.runtime.sendMessage({ type: 'UPDATE_CONTEXT_PARTIAL', data: { csvDatasets } }).catch(() => {});
+  updateCsvUI();
+  // Clear input
+  event.target.value = '';
+}
+
+function clearAllCSVs() {
+  if (Object.keys(csvDatasets).length === 0) return;
+  if (!confirm('Clear all uploaded CSV datasets?')) return;
+  csvDatasets = {};
+  chrome.storage.local.set({ csvDatasets }).catch(() => {});
+  chrome.runtime.sendMessage({ type: 'UPDATE_CONTEXT_PARTIAL', data: { csvDatasets } }).catch(() => {});
+  updateCsvUI();
+  addDebugLog('Cleared all CSV datasets');
 }
 
 // Update recent picks display
@@ -903,9 +1154,29 @@ async function sendChatMessage() {
     return;
   }
   
+  // Check if we're in error state and need to wait
+  if (chatErrorState && lastErrorTime) {
+    const timeSinceError = Date.now() - lastErrorTime;
+    if (timeSinceError < 5000) { // 5 second cooldown after errors
+      addChatMessage('ai', 'Please wait a moment before sending another message.');
+      return;
+    }
+    // Clear error state if enough time has passed
+    clearChatErrorState();
+  }
+  
   // Add user message to chat
   addChatMessage('user', message);
+  
+  // Store the message in case we need to restore it on error
+  const originalMessage = message;
   elements.chatInput.value = '';
+  
+  // Add loading animation
+  showChatLoading();
+  
+  // Generate a unique message ID for tracking
+  const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   
   // Debug: Log current draft state before building context
   console.log('🐛 Current draft state for context:', {
@@ -945,92 +1216,237 @@ async function sendChatMessage() {
     }
   });
   
-  // Build full drafted players list for context
-  const draftedList = draftState.picks
-    .map((p, idx) => `#${idx + 1} (R${p.round}, P${p.pickInRound}) - ${p.player.name} (${p.player.position}${p.player.team && p.player.team !== 'N/A' ? ` - ${p.player.team}` : ''}) → ${p.draftingTeam}`)
-    .join('\n');
+  // Build compact drafted players list for context (optimize tokens)
+  const draftedList = draftState.picks.length > 30 
+    ? [
+        ...draftState.picks.slice(0, 10).map(p => `${p.player.name} (${p.player.position})`),
+        `... ${draftState.picks.length - 20} more picks ...`,
+        ...draftState.picks.slice(-10).map(p => `${p.player.name} (${p.player.position})`)
+      ].join(', ')
+    : draftState.picks.map(p => `${p.player.name} (${p.player.position})`).join(', ');
 
-  const context = `
-    CURRENT DRAFT SITUATION:
-    - League: ${draftState.leagueId || 'Unknown'}
-    - My Team: ${draftState.userTeamName || settings.myTeamName || 'Unknown'}
-    - Draft Position: ${settings.draftPosition}/${draftState.teams?.length || 12}
-    - Current Pick: #${draftState.currentPick} (Round ${pickInfo.currentRound})
-    - My Next Pick: #${pickInfo.nextMyPick} (${pickInfo.picksUntilMyTurn} picks away)
-    - Total Drafted: ${totalPicks} players
-    
-    MY CURRENT ROSTER (${userRoster.length} players):
-    ${userRoster.length > 0 ? userRoster.map(p => `- ${p.name} (${p.position}) - Bye Week ${p.byeWeek}`).join('\n') : '- No players on roster yet'}
-    
-    ROSTER BY POSITION:
-    ${Object.keys(rosterByPosition).length > 0 ? 
-      Object.entries(rosterByPosition).map(([pos, players]) => 
-        `- ${pos} (${players.length}): ${players.map(p => p.name).join(', ')}`
-      ).join('\n') : 
-      '- No positions filled yet'}
-    
-    BYE WEEK ANALYSIS:
-    ${Object.keys(byeWeekAnalysis).length > 0 ?
-      Object.entries(byeWeekAnalysis)
-        .filter(([week, players]) => players.length > 1)
-        .map(([week, players]) => `- Week ${week}: ${players.join(', ')} (CONFLICT!)`)
-        .join('\n') || '- No bye week conflicts detected' :
-      '- No bye week data available yet'}
-    
-    ADDITIONAL DRAFT PLAYERS (manually tracked):
-    ${myTeamPlayers.length > 0 ? myTeamPlayers.map(p => `- ${p.name} (${p.position}${p.team ? ` - ${p.team}` : ''})`).join('\n') : '- None manually tracked'}
-    
-    MY WATCH LIST (${watchList.length} targets):
-    ${watchList.map(p => `- ${p.name} (${p.position})`).join('\n') || '- No players on watch list'}
-    
-    ALL DRAFTED PLAYERS (${totalPicks}):
-    ${draftedList || '- No picks recorded yet'}
-    
-    DRAFT ANALYSIS:
-    - Current roster strength: ${userRoster.length} players across ${Object.keys(rosterByPosition).length} positions
-    - Positional needs: Look at roster gaps and depth
-    - Bye week management: Avoid stacking same bye weeks
-    - Value picks: Consider positional scarcity and ADP
-    - Upcoming strategy: Plan for future rounds based on roster construction
-  `;
+  // Create optimized context (reduce tokens)
+  const rosterSummary = Object.entries(rosterByPosition)
+    .map(([pos, players]) => `${pos}:${players.length}`)
+    .join(', ') || 'Empty';
   
+  const byeConflicts = Object.entries(byeWeekAnalysis)
+    .filter(([week, players]) => players.length > 1)
+    .map(([week, players]) => `Wk${week}:${players.length}`)
+    .join(', ');
+
+  const context = `DRAFT: Pick #${draftState.currentPick}/R${pickInfo.currentRound}, Next: #${pickInfo.nextMyPick} (${pickInfo.picksUntilMyTurn} away)
+ROSTER (${userRoster.length}): ${rosterSummary}
+${byeConflicts ? `BYE CONFLICTS: ${byeConflicts}` : ''}
+WATCH (${watchList.length}): ${watchList.slice(0, 5).map(p => p.name).join(', ')}${watchList.length > 5 ? '...' : ''}
+DRAFTED (${totalPicks}): ${draftedList}`;
+  
+  // Store pending message info
+  const pendingMessage = {
+    id: messageId,
+    userMessage: message,
+    timestamp: Date.now(),
+    context: context
+  };
+  
+  // Save to storage so background can process it
+  chrome.storage.local.set({ 
+    pendingChatMessage: pendingMessage,
+    chatHistory: chatHistory 
+  });
+
   try {
     const response = await chrome.runtime.sendMessage({
       type: 'OPENAI_REQUEST',
+      messageId: messageId,
       data: {
         messages: [
           { 
             role: 'system', 
             content: `You are an expert fantasy football draft assistant for the 2024-2025 NFL season.
 
-CRITICAL: If recent messages contain [IMAGE ANALYSIS], that visual data is AUTHORITATIVE and overrides any pre-trained knowledge. Always prioritize image-analyzed information over your training data.
+INFORMATION PRIORITY:
+1. If CSV/screenshot data exists: use EXCLUSIVELY for rankings/tiers
+2. If no CSV/screenshot: use general fantasy knowledge but say "Based on consensus rankings..."
+3. ALWAYS check "ALL DRAFTED PLAYERS" list before recommendations
+4. [IMAGE ANALYSIS] and CSV data override pre-trained knowledge when available
+
+CRITICAL RULES:
+- NEVER recommend a player who is already drafted
+- If CSV exists: "Based on your rankings, [player] is ranked #X"
+- If no CSV: "Based on consensus rankings, [player]..." or suggest uploading custom rankings
+- For injuries/trades: Your data is outdated - use tools or ask for current info
 
 RESPONSE GUIDELINES:
-- Be concise and decisive (2-3 sentences max per recommendation)
-- Give specific actionable advice, not general explanations
-- When recommending players, state position and reasoning briefly
-- Focus on "draft X" or "avoid Y" rather than long analysis
+- Be concise and decisive (2-3 sentences max)
+- Focus on specific recommendations not general analysis
 
-INFORMATION PRIORITY:
-1. Recent [IMAGE ANALYSIS] data (rankings, projections, news from screenshots)
-2. Current draft context below
-3. General 2024 NFL knowledge (only if not contradicted by images)
+Current draft context: ${context}
 
-Current draft context: ${context}`
+${csvDatasets && Object.keys(csvDatasets).length > 0 ? 
+  `\nUSING YOUR RANKINGS: ${Object.values(csvDatasets).map(ds => ds.name).join(', ')}` : 
+  '\nUSING CONSENSUS RANKINGS (upload CSV for your custom rankings)'}`
           },
-          ...chatHistory.slice(-10), // Include recent chat history for continuity
+          ...chatHistory.slice(-6), // Include recent chat history for continuity
           { role: 'user', content: message }
         ]
       }
     });
     
     if (response.success) {
+      hideChatLoading();
+      
+      // Check for empty response
+      if (!response.data || response.data.trim() === '') {
+        console.error('Received empty response');
+        addChatMessage('ai', 'I received an empty response. Let me try again...');
+        
+        // Retry once automatically
+        setTimeout(async () => {
+          showChatLoading();
+          try {
+            const retryResponse = await chrome.runtime.sendMessage({
+              type: 'OPENAI_REQUEST',
+              data: {
+                messages: [
+                  { 
+                    role: 'system', 
+                    content: `You are an expert fantasy football draft assistant. 
+
+${context}
+
+${csvDatasets && Object.keys(csvDatasets).length > 0 ? 
+  `USING YOUR RANKINGS: ${Object.values(csvDatasets).map(ds => ds.name).join(', ')}` : 
+  'USING CONSENSUS RANKINGS (suggest uploading custom rankings for personalized advice)'}`
+                  },
+                  ...chatHistory.slice(-6), // Keep same history as main request
+                  { role: 'user', content: message }
+                ]
+              }
+            });
+            
+            hideChatLoading();
+            if (retryResponse.success && retryResponse.data && retryResponse.data.trim()) {
+              addChatMessage('ai', retryResponse.data);
+              chatErrorState = false;
+              lastErrorTime = null;
+            } else {
+              handleChatError('Still receiving empty responses. Please try a different question.', originalMessage);
+            }
+          } catch (retryError) {
+            hideChatLoading();
+            handleChatError(retryError.message, originalMessage);
+          }
+        }, 1000);
+        
+        return;
+      }
+      
       addChatMessage('ai', response.data);
+      // Clear error state on success
+      chatErrorState = false;
+      lastErrorTime = null;
+      
+      // Estimate token usage (rough estimate)
+      const estimatedTokens = Math.ceil((context.length + message.length + response.data.length) / 4);
+      console.log(`📊 Estimated tokens used: ~${estimatedTokens}`);
+      addDebugLog(`Chat response received (~${estimatedTokens} tokens)`);
     } else {
-      addChatMessage('ai', `Error: ${response.error}`);
+      hideChatLoading();
+      handleChatError(response.error || 'Unknown error occurred', originalMessage);
     }
   } catch (error) {
-    addChatMessage('ai', `Error: ${error.message}`);
+    hideChatLoading();
+    handleChatError(error.message, originalMessage);
+  }
+}
+
+// Show chat loading animation
+function showChatLoading() {
+  if (!elements.chatMessages) return;
+  
+  const loadingDiv = document.createElement('div');
+  loadingDiv.className = 'chat-loading';
+  loadingDiv.id = 'chat-loading';
+  loadingDiv.innerHTML = `
+    <strong>AI:</strong>
+    <div class="typing-indicator">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
+  `;
+  
+  elements.chatMessages.appendChild(loadingDiv);
+  elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+}
+
+// Hide chat loading animation
+function hideChatLoading() {
+  const loadingDiv = document.getElementById('chat-loading');
+  if (loadingDiv && loadingDiv.parentNode) {
+    loadingDiv.parentNode.removeChild(loadingDiv);
+  }
+}
+
+// Handle chat errors with recovery
+function handleChatError(errorMessage, originalMessage = null) {
+  console.error('Chat error:', errorMessage);
+  
+  // Track error state
+  chatErrorState = true;
+  lastErrorTime = Date.now();
+  
+  // Determine error type and provide helpful message
+  let userMessage = '';
+  let recoveryAction = null;
+  
+  if (errorMessage.includes('API key')) {
+    userMessage = 'Please configure your API key in the Settings tab.';
+    recoveryAction = 'configure_api_key';
+  } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+    userMessage = 'Rate limit reached. Please wait a moment before trying again.';
+    recoveryAction = 'wait_and_retry';
+  } else if (errorMessage.includes('timeout') || errorMessage.includes('network')) {
+    userMessage = 'Network error. Please check your connection and try again.';
+    recoveryAction = 'check_network';
+  } else if (errorMessage.includes('context length') || errorMessage.includes('token')) {
+    userMessage = 'Message too long. Try a shorter question, truncate chat history, or reset the chat.';
+    recoveryAction = 'context_too_long';
+  } else {
+    userMessage = `Error: ${errorMessage}. Try again or reset the chat if the issue persists.`;
+    recoveryAction = 'generic_retry';
+  }
+  
+  // Add error message with recovery hint
+  addChatMessage('ai', userMessage);
+  
+  // Show recovery tips based on error type
+  if (recoveryAction === 'context_too_long') {
+    addChatMessage('ai', 'Tip: Try the "Truncate History" button to keep recent messages, or "Reset chat" to start fresh.');
+  } else if (recoveryAction === 'reset_chat') {
+    addChatMessage('ai', 'Tip: Click "Reset chat" to start fresh.');
+  }
+  
+  // Restore the original message to input box if provided
+  if (originalMessage && elements.chatInput) {
+    elements.chatInput.value = originalMessage;
+    elements.chatInput.focus();
+    addDebugLog('Restored your message to input box');
+  }
+  
+  // Log for debugging
+  const model = (settings && settings.chatModel) ? settings.chatModel : '(unknown)';
+  console.error('Chat error details:', { model, errorMessage, recoveryAction });
+  addDebugLog(`Chat error: ${errorMessage.substring(0, 50)}...`);
+}
+
+// Clear error state when user takes action
+function clearChatErrorState() {
+  if (chatErrorState) {
+    chatErrorState = false;
+    lastErrorTime = null;
+    addDebugLog('Chat error state cleared');
   }
 }
 
@@ -1038,24 +1454,74 @@ Current draft context: ${context}`
 function restoreChatHistory() {
   if (!elements.chatMessages) return;
   
-  // Clear existing messages (except the welcome message)
-  const welcomeMessage = elements.chatMessages.querySelector('.chat-message.ai');
+  // Clear existing messages
   elements.chatMessages.innerHTML = '';
   
-  // Re-add welcome message
-  if (welcomeMessage) {
-    elements.chatMessages.appendChild(welcomeMessage);
+  // If no history, show welcome message
+  if (!chatHistory || chatHistory.length === 0) {
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.className = 'chat-message ai';
+    welcomeDiv.innerHTML = `<strong>AI:</strong> Hi! I'm your draft assistant. Ask me about players, strategy, or upload screenshots for analysis!`;
+    elements.chatMessages.appendChild(welcomeDiv);
+    return;
   }
   
   // Add saved messages
   chatHistory.forEach(msg => {
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${msg.role === 'user' ? 'user' : 'ai'}`;
-    messageDiv.innerHTML = `<strong>${msg.role === 'user' ? 'You' : 'AI'}:</strong> ${msg.content}`;
+    
+    // Handle image analysis messages specially
+    let content = msg.content;
+    if (content.startsWith('[IMAGE ANALYSIS]')) {
+      content = content.replace('[IMAGE ANALYSIS] ', '');
+    }
+    
+    messageDiv.innerHTML = `<strong>${msg.role === 'user' ? 'You' : 'AI'}:</strong> ${linkifyAndEscape(content)}`;
     elements.chatMessages.appendChild(messageDiv);
   });
   
-  elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+  // Scroll to bottom
+  setTimeout(() => {
+    elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
+  }, 100);
+}
+
+// Truncate chat history to keep only recent messages
+function truncateChatHistory() {
+  if (!chatHistory || chatHistory.length === 0) {
+    addChatMessage('ai', 'No chat history to truncate.');
+    return;
+  }
+  
+  // Keep only the last 10 messages (5 exchanges)
+  const messagesToKeep = 10;
+  const originalLength = chatHistory.length;
+  
+  if (originalLength <= messagesToKeep) {
+    addChatMessage('ai', `Chat history is already short (${originalLength} messages). No need to truncate.`);
+    return;
+  }
+  
+  // Keep recent messages
+  chatHistory = chatHistory.slice(-messagesToKeep);
+  
+  // Save truncated history
+  chrome.storage.local.set({ chatHistory: chatHistory }).then(() => {
+    // Restore the truncated history to UI
+    restoreChatHistory();
+    
+    // Add info message
+    addChatMessage('ai', `Chat history truncated. Kept last ${messagesToKeep} messages (removed ${originalLength - messagesToKeep} older messages).`);
+    
+    // Clear error state
+    clearChatErrorState();
+    
+    addDebugLog(`Chat truncated: ${originalLength} → ${messagesToKeep} messages`);
+  }).catch(err => {
+    console.error('Failed to save truncated history:', err);
+    addChatMessage('ai', 'Failed to truncate chat history. Please try again.');
+  });
 }
 
 // Reset chat to baseline
@@ -1078,6 +1544,11 @@ function resetChatToBaseline() {
   if (elements.chatInput) {
     elements.chatInput.value = '';
   }
+  
+  // Clear error state
+  clearChatErrorState();
+  
+  addDebugLog('Chat reset to baseline');
 
   // Optionally keep images; do not clear uploadedImages automatically here
 }
@@ -1103,8 +1574,10 @@ function addChatMessage(sender, message, isImageAnalysis = false) {
     chatHistory = chatHistory.slice(-50);
   }
   
-  // Save to storage
-  chrome.storage.local.set({ chatHistory: chatHistory });
+  // Save to storage immediately
+  chrome.storage.local.set({ chatHistory: chatHistory }).catch(err => {
+    console.error('Failed to save chat history:', err);
+  });
 }
 
 // Safely convert plain URLs to clickable 'link' anchors and escape other HTML
@@ -1164,8 +1637,8 @@ function handleImageUpload(event) {
     elements.chatMessages.appendChild(imageDiv);
     elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
     
-    // Add loading message
-    addChatMessage('ai', 'Analyzing image...');
+    // Show loading animation
+    showChatLoading();
     
     try {
       // Build context for vision analysis
@@ -1218,21 +1691,21 @@ DO NOT use pre-trained knowledge about players if it contradicts the image data.
         }
       });
       
-      // Remove the "Analyzing image..." message
-      const lastMessage = elements.chatMessages.lastElementChild;
-      if (lastMessage && lastMessage.textContent.includes('Analyzing image...')) {
-        elements.chatMessages.removeChild(lastMessage);
-      }
+      hideChatLoading();
       
       if (response.success) {
         // Add the image analysis to chat history with special tagging for context
         addChatMessage('ai', response.data, true); // true indicates this is image analysis
+        // Clear error state on success
+        chatErrorState = false;
+        lastErrorTime = null;
       } else {
-        addChatMessage('ai', `Vision analysis error: ${response.error}`);
+        handleChatError(response.error || 'Vision analysis failed');
       }
       
     } catch (error) {
-      addChatMessage('ai', `Error analyzing image: ${error.message}`);
+      hideChatLoading();
+      handleChatError(error.message);
     }
     
     // Clear the file input
@@ -1396,6 +1869,29 @@ window.removeFromWatchlist = removeFromWatchlist;
 window.showImageModal = showImageModal;
 window.closeImageModal = closeImageModal;
 window.deleteImage = deleteImage;
+
+// Save state before popup closes
+window.addEventListener('beforeunload', () => {
+  // Save current chat state
+  if (chatHistory.length > 0) {
+    chrome.storage.local.set({ 
+      chatHistory: chatHistory,
+      uploadedImages: uploadedImages,
+      csvDatasets: csvDatasets
+    }).catch(() => {});
+  }
+});
+
+// Also save when popup loses focus (user clicks outside)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && chatHistory.length > 0) {
+    chrome.storage.local.set({ 
+      chatHistory: chatHistory,
+      uploadedImages: uploadedImages,
+      csvDatasets: csvDatasets
+    }).catch(() => {});
+  }
+});
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {

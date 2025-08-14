@@ -169,23 +169,33 @@ router.post('/chat', async (req, res) => {
 
 IMPORTANT: Your knowledge cutoff is over a year old (early 2024), so you may not know about recent trades, signings, injuries, or current NFL roster changes. Always use the available tools to get current information when discussing players or making recommendations.
 
+ACCURACY REQUIREMENTS:
+1. ALWAYS fact-check player team assignments using tools before making recommendations
+2. If uncertain about current player status, explicitly state "Let me check the latest info..." and use tools
+3. When tools return no results, state "I couldn't find current information about [player], so I recommend checking ESPN or another source"
+4. Never guess or use potentially outdated information about:
+   - Player injuries or health status
+   - Current team assignments
+   - Suspensions or legal issues
+   - Recent performance stats
+
 You have access to the following tools:
 1. **Player Injury Status**: Get the latest injury status and news for NFL players.
 2. **Fantasy News Search**: Search for recent fantasy football news and updates.
 3. **Current NFL Context**: Get recent trades, signings, and roster moves to understand the current state of the league.
 
-ALWAYS use these tools when:
-- A user asks about a specific player's status
-- Making draft recommendations
-- Discussing current fantasy football strategy
-- You're unsure about a player's current team or status
-- You're asked about recent trades or roster moves
-- You're asked about current NFL context
-- You need to provide up-to-date information about players or teams
+INFORMATION PRIORITY:
+1. If user has uploaded CSV/screenshot rankings: use those EXCLUSIVELY for rankings
+2. If no CSV/screenshot: use general fantasy knowledge but clearly state "Based on consensus rankings..."
+3. Always mention when using uploaded vs consensus data
 
-Use these tools to provide accurate, up-to-date information to help the user draft the best team possible.
+Use tools for:
+- Current injury status (your training data is outdated)
+- Recent trades or roster moves
+- Team depth charts
+- Breaking news
 
-Be brtually honest with the user - It is better to hurt feelings than to give bad advice. Don't beat around the bush with "it depends" or "it could go either way". Provide clear, actionable advice based on the current draft state and available data.
+Be brutally honest with the user - It is better to hurt feelings than to give bad advice. When CSV data exists, strictly follow their rankings. When not, provide best consensus advice while suggesting they upload their custom rankings.
 
 Context about the user's league:
 ${context ? JSON.stringify(context, null, 2) : 'No league context provided yet'}`;
@@ -260,9 +270,9 @@ Respond in the following format:
     // Build conversation history
     let conversationMessages = [{ role: "system", content: systemPrompt }];
     
-    // Add recent conversation history (last 6 messages to keep context manageable)
+    // Add recent conversation history (last 8 messages to keep context manageable)
     if (context?.conversationHistory && context.conversationHistory.length > 1) {
-      const recentHistory = context.conversationHistory.slice(-6);
+      const recentHistory = context.conversationHistory.slice(-8);
       conversationMessages.push(...recentHistory.map(msg => ({
         role: msg.role,
         content: msg.content
@@ -275,7 +285,7 @@ Respond in the following format:
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: conversationMessages,
-      max_tokens: 500,
+      max_tokens: 1000, // Reduced from 1500 to save tokens
       temperature: 0.7,
       tools: [
         {
@@ -385,7 +395,7 @@ Respond in the following format:
       currentCompletion = await openai.chat.completions.create({
         model: "gpt-4o-mini",
         messages: currentMessages,
-        max_tokens: 500,
+        max_tokens: 1500,
         temperature: 0.7,
         tools: [
           {
@@ -505,7 +515,7 @@ router.post('/analyze-screenshot', async (req, res) => {
           ]
         }
       ],
-      max_tokens: 800,
+      max_tokens: 1500,
     });
 
     const response = completion.choices[0].message.content;

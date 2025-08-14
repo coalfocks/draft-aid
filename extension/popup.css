@@ -199,6 +199,22 @@ body {
   background: #5a6268;
 }
 
+/* Make truncate button slightly different */
+#truncate-chat {
+  background: #495057;
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
+#truncate-chat:hover {
+  background: #343a40;
+}
+
+#reset-chat {
+  font-size: 11px;
+  padding: 4px 10px;
+}
+
 .btn-small {
   padding: 4px 8px;
   font-size: 11px;
@@ -253,7 +269,10 @@ body {
 }
 
 .file-upload {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 /* Settings Tab Styles */
@@ -327,6 +346,51 @@ body {
   content: " 🔄";
 }
 
+/* Chat Loading Animation */
+.chat-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #f3e5f5;
+  border-radius: 6px;
+  margin-right: 20px;
+  margin-bottom: 12px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  background: #667eea;
+  border-radius: 50%;
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
 /* Image Gallery styles */
 .image-gallery {
   display: grid;
@@ -339,6 +403,41 @@ body {
   border-radius: 4px;
   padding: 8px;
   background: white;
+}
+
+/* CSV chips */
+.csv-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip-btn {
+  background: #f1f3f5;
+  border: 1px solid #dee2e6;
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.chip-btn:hover {
+  background: #e9ecef;
+}
+
+.link-btn {
+  background: transparent;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  font-size: 12px;
+  text-decoration: underline;
+  padding: 0 4px;
+}
+
+.link-btn:hover {
+  color: #5a6268;
 }
 
 .image-thumbnail {
