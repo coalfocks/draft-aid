@@ -8,7 +8,8 @@ let draftState = {
   leagueId: null,
   myTeam: [],
   watchList: [],
-  userRoster: []
+  userRoster: [],
+  keepers: []
 };
 
 let settings = {
@@ -69,7 +70,12 @@ const elements = {
   imageCount: document.getElementById('image-count'),
   clearImagesBtn: document.getElementById('clear-images'),
   resetChatBtn: document.getElementById('reset-chat'),
-  truncateChatBtn: document.getElementById('truncate-chat')
+  truncateChatBtn: document.getElementById('truncate-chat'),
+  keeperNameInput: document.getElementById('keeper-name-input'),
+  addKeeperBtn: document.getElementById('add-keeper'),
+  bulkAddKeepersBtn: document.getElementById('bulk-add-keepers'),
+  keepersList: document.getElementById('keepers-list'),
+  keepersCount: document.getElementById('keepers-count')
 };
 
 // Initialize popup
@@ -90,6 +96,16 @@ async function initialize() {
   // Update UI
   updateUI();
   
+  // Ensure draftedPlayers is synced with initial keepers
+  if (draftState.keepers && draftState.keepers.length > 0) {
+    chrome.runtime.sendMessage({
+      type: 'UPDATE_CONTEXT_PARTIAL',
+      data: { 
+        draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+      }
+    }).catch(() => {});
+  }
+  
   // Set up auto-refresh for draft picks every 10 seconds
   setInterval(() => {
     if (draftState.leagueId) { // Only refresh if we're in a draft
@@ -100,7 +116,7 @@ async function initialize() {
 
 // Load settings from storage
 async function loadSettings() {
-  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount', 'csvDatasets', 'pendingChatResponse']);
+  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount', 'csvDatasets', 'pendingChatResponse', 'keepers']);
   
   // Load from either settings object or direct key
   const apiKey = result.openaiApiKey || result.settings?.openaiApiKey;
@@ -166,12 +182,47 @@ async function loadSettings() {
     lastPickCount = result.lastPickCount;
   }
   
+  // Load keepers
+  if (result.keepers && Array.isArray(result.keepers)) {
+    draftState.keepers = result.keepers;
+    
+    // Add keepers to picks if not already there
+    result.keepers.forEach(keeperName => {
+      // Check if this keeper is already in picks
+      const alreadyInPicks = draftState.picks.some(pick => 
+        pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+      );
+      
+      if (!alreadyInPicks) {
+        const keeperPick = {
+          pickNumber: 0,
+          player: {
+            name: keeperName,
+            position: 'KEEPER',
+            team: 'KEEPER'
+          },
+          draftingTeam: 'Keeper'
+        };
+        draftState.picks.push(keeperPick);
+      }
+    });
+    
+    // Immediately sync to background context (keepers are now in draftedPlayers)
+    chrome.runtime.sendMessage({
+      type: 'UPDATE_CONTEXT_PARTIAL',
+      data: { 
+        draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+      }
+    }).catch(() => {});
+  }
+  
   console.log('⚙️ Settings loaded:', { 
     hasApiKey: !!settings.openaiApiKey, 
     teamName: settings.myTeamName,
     chatMessages: chatHistory.length,
     images: uploadedImages.length,
-    hasPendingResponse: !!result.pendingChatResponse
+    hasPendingResponse: !!result.pendingChatResponse,
+    keepers: draftState.keepers.length
   });
   
   // Populate settings form
@@ -188,11 +239,37 @@ async function loadDraftState() {
   try {
     const response = await chrome.runtime.sendMessage({ type: 'GET_STATE' });
     if (response) {
+      // Save current keepers before updating state
+      const currentKeepers = draftState.keepers || [];
+      
       // Auto-reset chat if league changed
       if (response.leagueId && lastLeagueId && response.leagueId !== lastLeagueId) {
         resetChatToBaseline();
       }
       draftState = { ...draftState, ...response };
+      
+      // Restore keepers if they were cleared
+      if (currentKeepers.length > 0) {
+        draftState.keepers = currentKeepers;
+        // Re-add keeper picks if missing
+        currentKeepers.forEach(keeperName => {
+          const alreadyInPicks = draftState.picks.some(pick => 
+            pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+          );
+          if (!alreadyInPicks) {
+            draftState.picks.unshift({
+              pickNumber: 0,
+              player: {
+                name: keeperName,
+                position: 'KEEPER',
+                team: 'KEEPER'
+              },
+              draftingTeam: 'Keeper'
+            });
+          }
+        });
+      }
+      
       if (response.leagueId && response.leagueId !== lastLeagueId) {
         lastLeagueId = response.leagueId;
         chrome.storage.local.set({ lastLeagueId });
@@ -226,7 +303,35 @@ function requestDraftData() {
           if (response.leagueId && lastLeagueId && response.leagueId !== lastLeagueId) {
             resetChatToBaseline();
           }
+          
+          // Preserve keepers when updating draft state
+          const currentKeepers = draftState.keepers || [];
           draftState = { ...draftState, ...response };
+          
+          // Restore keepers if they were cleared
+          if (currentKeepers.length > 0 && (!draftState.keepers || draftState.keepers.length === 0)) {
+            draftState.keepers = currentKeepers;
+            
+            // Re-add keepers to picks if they're missing
+            currentKeepers.forEach(keeperName => {
+              const alreadyInPicks = draftState.picks.some(pick => 
+                pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+              );
+              
+              if (!alreadyInPicks) {
+                draftState.picks.unshift({
+                  pickNumber: 0,
+                  player: {
+                    name: keeperName,
+                    position: 'KEEPER',
+                    team: 'KEEPER'
+                  },
+                  draftingTeam: 'Keeper'
+                });
+              }
+            });
+          }
+          
           if (response.leagueId && response.leagueId !== lastLeagueId) {
             lastLeagueId = response.leagueId;
             chrome.storage.local.set({ lastLeagueId });
@@ -277,10 +382,38 @@ function refreshAndSync() {
             console.error('Refresh error:', chrome.runtime.lastError);
             addDebugLog('Failed to refresh: ' + chrome.runtime.lastError.message);
           } else if (response) {
+            // Preserve keepers
+            const currentKeepers = draftState.keepers || [];
+            
             // Update state with fresh data
             draftState = { ...draftState, ...response };
+            
+            // Restore keepers
+            if (currentKeepers.length > 0) {
+              draftState.keepers = currentKeepers;
+              
+              // Re-add keepers to picks
+              currentKeepers.forEach(keeperName => {
+                const alreadyInPicks = draftState.picks.some(pick => 
+                  pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+                );
+                
+                if (!alreadyInPicks) {
+                  draftState.picks.unshift({
+                    pickNumber: 0,
+                    player: {
+                      name: keeperName,
+                      position: 'KEEPER',
+                      team: 'KEEPER'
+                    },
+                    draftingTeam: 'Keeper'
+                  });
+                }
+              });
+            }
+            
             updateUI();
-            addDebugLog(`Refreshed: ${response.picks?.length || 0} picks found`);
+            addDebugLog(`Refreshed: ${response.picks?.length || 0} picks found (+ ${currentKeepers.length} keepers)`);
           }
           
           // Reset button
@@ -299,6 +432,13 @@ function setupEventListeners() {
   // Draft board actions
   elements.addToWatchlistBtn?.addEventListener('click', addToWatchlist);
   elements.refreshPicksBtn?.addEventListener('click', refreshAndSync);
+  
+  // Keeper actions
+  elements.addKeeperBtn?.addEventListener('click', addKeeper);
+  elements.bulkAddKeepersBtn?.addEventListener('click', bulkAddKeepers);
+  elements.keeperNameInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addKeeper();
+  });
   
   // Chat actions
   elements.sendChatBtn?.addEventListener('click', sendChatMessage);
@@ -360,9 +500,27 @@ function setupEventListeners() {
         addDebugLog(`New pick #${request.data.pickNumber}: ${request.data.player?.name}`);
       }
     } else if (request.type === 'PICKS_REPLACED') {
-      // Full picks replacement
+      // Full picks replacement - preserve keepers
       const oldCount = draftState.picks.length;
+      const keeperPicks = draftState.picks.filter(pick => 
+        pick.player?.position === 'KEEPER'
+      );
+      
       draftState.picks = request.data || [];
+      
+      // Re-add keeper picks at the beginning
+      if (keeperPicks.length > 0) {
+        // Add keepers that aren't already in the new picks
+        keeperPicks.forEach(keeperPick => {
+          const alreadyExists = draftState.picks.some(pick => 
+            pick.player?.name === keeperPick.player?.name && pick.player?.position === 'KEEPER'
+          );
+          if (!alreadyExists) {
+            draftState.picks.unshift(keeperPick);
+          }
+        });
+      }
+      
       draftState.currentPick = draftState.picks.length + 1;
       updateUI();
       if (oldCount !== draftState.picks.length) {
@@ -372,7 +530,34 @@ function setupEventListeners() {
       // Full draft state update from content script
       if (request.data) {
         const oldPickCount = draftState.picks.length;
+        const currentKeepers = draftState.keepers || [];
+        
         draftState = { ...draftState, ...request.data };
+        
+        // Restore keepers if they were cleared
+        if (currentKeepers.length > 0 && (!draftState.keepers || draftState.keepers.length === 0)) {
+          draftState.keepers = currentKeepers;
+          
+          // Re-add keepers to picks if missing
+          currentKeepers.forEach(keeperName => {
+            const alreadyInPicks = draftState.picks.some(pick => 
+              pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+            );
+            
+            if (!alreadyInPicks) {
+              draftState.picks.unshift({
+                pickNumber: 0,
+                player: {
+                  name: keeperName,
+                  position: 'KEEPER',
+                  team: 'KEEPER'
+                },
+                draftingTeam: 'Keeper'
+              });
+            }
+          });
+        }
+        
         updateUI();
         if (oldPickCount !== draftState.picks.length) {
           addDebugLog(`Draft sync: ${oldPickCount} → ${draftState.picks.length} picks`);
@@ -403,6 +588,26 @@ function setupTabs() {
 
 // Update UI with current draft state
 function updateUI() {
+  // First, ensure keepers are always in picks
+  if (draftState.keepers && draftState.keepers.length > 0) {
+    draftState.keepers.forEach(keeperName => {
+      const alreadyInPicks = draftState.picks.some(pick => 
+        pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+      );
+      if (!alreadyInPicks) {
+        draftState.picks.unshift({
+          pickNumber: 0,
+          player: {
+            name: keeperName,
+            position: 'KEEPER',
+            team: 'KEEPER'
+          },
+          draftingTeam: 'Keeper'
+        });
+      }
+    });
+  }
+  
   // Update header
   if (elements.draftStatus) {
     const status = draftState.picks.length > 0 ? 'In Progress' : 'Waiting for picks';
@@ -424,14 +629,23 @@ function updateUI() {
   // Update watchlist
   updateWatchlist();
   
+  // Update keepers
+  updateKeepers();
+  
   // Update debug info
   updateDebugInfo();
-  // Keep background context in sync (myTeam and draftedPlayers)
+  // Keep background context in sync (myTeam and draftedPlayers which includes keepers)
+  // Count keepers in the drafted list
+  const keeperCount = draftState.picks.filter(p => p.player?.position === 'KEEPER').length;
+  const draftedNames = draftState.picks.map(p => p.player?.name).filter(Boolean);
+  
+  console.log(`📋 Updating context: ${draftedNames.length} total players (${keeperCount} keepers)`);
+  
   chrome.runtime.sendMessage({
     type: 'UPDATE_CONTEXT_PARTIAL',
     data: {
       myTeam: draftState.myTeam.map(p => p.name),
-      draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+      draftedPlayers: draftedNames // This now includes keepers
     }
   }).catch(() => {});
   // Also update background with CSV presence
@@ -645,6 +859,40 @@ function updateWatchlist() {
   `).join('');
 }
 
+// Update keepers display
+function updateKeepers() {
+  if (!elements.keepersList || !elements.keepersCount) return;
+  
+  elements.keepersCount.textContent = draftState.keepers.length;
+  
+  if (draftState.keepers.length === 0) {
+    elements.keepersList.innerHTML = '<div class="no-data">No keeper players added yet</div>';
+    return;
+  }
+  
+  elements.keepersList.innerHTML = draftState.keepers.map((keeper, index) => {
+    // Handle both string and object formats
+    const keeperName = typeof keeper === 'string' ? keeper : keeper.name || keeper.player?.name || '[Unknown]';
+    return `
+      <div class="player-card">
+        <div>
+          <span class="player-name">${keeperName}</span>
+          <span class="player-position" style="color: #dc3545;">KEEPER</span>
+        </div>
+        <button class="btn btn-small keeper-remove-btn" data-index="${index}">Remove</button>
+      </div>
+    `;
+  }).join('');
+  
+  // Add event listeners to remove buttons
+  document.querySelectorAll('.keeper-remove-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const index = parseInt(e.target.dataset.index);
+      removeKeeper(index);
+    });
+  });
+}
+
 // Update debug info
 function updateDebugInfo() {
   if (elements.debugLeague) elements.debugLeague.textContent = draftState.leagueId || '--';
@@ -814,9 +1062,37 @@ function forceExtract() {
           }
           
           if (response) {
+            // Preserve keepers before updating
+            const currentKeepers = draftState.keepers || [];
+            
             draftState = { ...draftState, ...response };
+            
+            // Restore keepers and add to picks
+            if (currentKeepers.length > 0) {
+              draftState.keepers = currentKeepers;
+              
+              // Re-add keepers to picks
+              currentKeepers.forEach(keeperName => {
+                const alreadyInPicks = draftState.picks.some(pick => 
+                  pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+                );
+                
+                if (!alreadyInPicks) {
+                  draftState.picks.unshift({
+                    pickNumber: 0,
+                    player: {
+                      name: keeperName,
+                      position: 'KEEPER',
+                      team: 'KEEPER'
+                    },
+                    draftingTeam: 'Keeper'
+                  });
+                }
+              });
+            }
+            
             updateUI();
-            addDebugLog(`✅ Extracted ${response.picks?.length || 0} picks, ${response.userRoster?.length || 0} roster players`);
+            addDebugLog(`✅ Extracted ${response.picks?.length || 0} picks, ${response.userRoster?.length || 0} roster players (+ ${currentKeepers.length} keepers)`);
           } else {
             addDebugLog('❌ Force extraction failed - no response');
             tryDirectExtraction(tab.id);
@@ -1064,8 +1340,36 @@ function tryDirectExtraction(tabId) {
       addDebugLog(`Draft columns: ${extractedData.foundElements.draftColumns}`);
       addDebugLog(`Roster elements: ${extractedData.foundElements.rosterElements}`);
       
+      // Preserve keepers before updating
+      const currentKeepers = draftState.keepers || [];
+      
       // Update state with what we found
       draftState = { ...draftState, ...extractedData };
+      
+      // Restore keepers and add to picks
+      if (currentKeepers.length > 0) {
+        draftState.keepers = currentKeepers;
+        
+        // Re-add keepers to picks
+        currentKeepers.forEach(keeperName => {
+          const alreadyInPicks = draftState.picks.some(pick => 
+            pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+          );
+          
+          if (!alreadyInPicks) {
+            draftState.picks.unshift({
+              pickNumber: 0,
+              player: {
+                name: keeperName,
+                position: 'KEEPER',
+                team: 'KEEPER'
+              },
+              draftingTeam: 'Keeper'
+            });
+          }
+        });
+      }
+      
       updateUI();
       
       console.log('🎯 Updated draft state:', draftState);
@@ -1094,6 +1398,139 @@ function addToWatchlist() {
     type: 'UPDATE_WATCHLIST',
     data: draftState.watchList
   });
+}
+
+// Add keeper
+function addKeeper() {
+  const keeperName = elements.keeperNameInput?.value.trim();
+  
+  if (!keeperName) return;
+  
+  // Check if already exists
+  if (draftState.keepers.includes(keeperName)) {
+    addDebugLog(`${keeperName} is already in keepers list`);
+    return;
+  }
+  
+  // Add to keepers list for display
+  draftState.keepers.push(keeperName);
+  
+  // ALSO add to draftedPlayers as a keeper pick
+  const keeperPick = {
+    pickNumber: 0, // Keepers are pre-draft, so pick 0
+    player: {
+      name: keeperName,
+      position: 'KEEPER',
+      team: 'KEEPER'
+    },
+    draftingTeam: 'Keeper'
+  };
+  
+  // Add to picks array
+  draftState.picks.push(keeperPick);
+  
+  // Clear input
+  if (elements.keeperNameInput) elements.keeperNameInput.value = '';
+  
+  // Update UI and save
+  updateKeepers();
+  updateUI(); // This will update drafted players list
+  saveKeepers();
+  
+  // Update context for AI - keepers are now in draftedPlayers
+  chrome.runtime.sendMessage({
+    type: 'UPDATE_CONTEXT_PARTIAL',
+    data: { 
+      draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+    }
+  });
+  
+  addDebugLog(`Added keeper: ${keeperName} (also added to drafted players)`);
+}
+
+// Bulk add keepers
+function bulkAddKeepers() {
+  const bulkInput = prompt('Enter multiple keeper names (one per line):');
+  if (!bulkInput) return;
+  
+  const newNames = bulkInput
+    .split('\n')
+    .map(name => name.trim())
+    .filter(name => name.length > 0 && !draftState.keepers.includes(name));
+  
+  if (newNames.length > 0) {
+    // Add to keepers list
+    draftState.keepers = [...draftState.keepers, ...newNames];
+    
+    // Add each keeper to draftedPlayers
+    newNames.forEach(keeperName => {
+      const keeperPick = {
+        pickNumber: 0, // Keepers are pre-draft
+        player: {
+          name: keeperName,
+          position: 'KEEPER',
+          team: 'KEEPER'
+        },
+        draftingTeam: 'Keeper'
+      };
+      draftState.picks.push(keeperPick);
+    });
+    
+    updateKeepers();
+    updateUI(); // Update drafted players display
+    saveKeepers();
+    
+    // Update context for AI - keepers are now in draftedPlayers
+    chrome.runtime.sendMessage({
+      type: 'UPDATE_CONTEXT_PARTIAL',
+      data: { 
+        draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+      }
+    });
+    
+    addDebugLog(`Added ${newNames.length} keepers (also added to drafted players)`);
+  }
+}
+
+// Remove keeper
+function removeKeeper(index) {
+  const removed = draftState.keepers[index];
+  draftState.keepers.splice(index, 1);
+  
+  // Also remove from picks array
+  draftState.picks = draftState.picks.filter(pick => 
+    !(pick.player?.name === removed && pick.player?.position === 'KEEPER')
+  );
+  
+  updateKeepers();
+  updateUI(); // Update drafted players display
+  saveKeepers();
+  
+  // Update context for AI - update draftedPlayers (keepers removed)
+  chrome.runtime.sendMessage({
+    type: 'UPDATE_CONTEXT_PARTIAL',
+    data: { 
+      draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+    }
+  });
+  
+  addDebugLog(`Removed keeper: ${removed} (also removed from drafted players)`);
+}
+
+// Save keepers to storage
+function saveKeepers() {
+  chrome.storage.local.set({ 
+    keepers: draftState.keepers,
+    draftState: draftState // Save entire draft state including picks
+  });
+  
+  // Always sync to background immediately
+  chrome.runtime.sendMessage({
+    type: 'UPDATE_CONTEXT_PARTIAL',
+    data: { 
+      draftedPlayers: draftState.picks.map(p => p.player?.name).filter(Boolean)
+    }
+  }).catch(() => {});
 }
 
 // Add player to my team
@@ -1185,7 +1622,8 @@ async function sendChatMessage() {
     teams: draftState.teams?.length || 0,
     currentPick: draftState.currentPick,
     userTeamName: draftState.userTeamName,
-    leagueId: draftState.leagueId
+    leagueId: draftState.leagueId,
+    keepers: draftState.keepers
   });
   
   // Build comprehensive draft context (will be augmented with compact context in background)
@@ -1216,14 +1654,8 @@ async function sendChatMessage() {
     }
   });
   
-  // Build compact drafted players list for context (optimize tokens)
-  const draftedList = draftState.picks.length > 30 
-    ? [
-        ...draftState.picks.slice(0, 10).map(p => `${p.player.name} (${p.player.position})`),
-        `... ${draftState.picks.length - 20} more picks ...`,
-        ...draftState.picks.slice(-10).map(p => `${p.player.name} (${p.player.position})`)
-      ].join(', ')
-    : draftState.picks.map(p => `${p.player.name} (${p.player.position})`).join(', ');
+  // All unavailable players are now in picks (including keepers) - just names, no positions to save tokens
+  const allUnavailable = draftState.picks.map(p => p.player.name).filter(Boolean);
 
   // Create optimized context (reduce tokens)
   const rosterSummary = Object.entries(rosterByPosition)
@@ -1235,11 +1667,8 @@ async function sendChatMessage() {
     .map(([week, players]) => `Wk${week}:${players.length}`)
     .join(', ');
 
-  const context = `DRAFT: Pick #${draftState.currentPick}/R${pickInfo.currentRound}, Next: #${pickInfo.nextMyPick} (${pickInfo.picksUntilMyTurn} away)
-ROSTER (${userRoster.length}): ${rosterSummary}
-${byeConflicts ? `BYE CONFLICTS: ${byeConflicts}` : ''}
-WATCH (${watchList.length}): ${watchList.slice(0, 5).map(p => p.name).join(', ')}${watchList.length > 5 ? '...' : ''}
-DRAFTED (${totalPicks}): ${draftedList}`;
+  const context = `P#${draftState.currentPick}/R${pickInfo.currentRound} Next:${pickInfo.picksUntilMyTurn}away
+Team:${rosterSummary}${byeConflicts ? ` Bye:${byeConflicts}` : ''}`;
   
   // Store pending message info
   const pendingMessage = {
@@ -1256,6 +1685,15 @@ DRAFTED (${totalPicks}): ${draftedList}`;
   });
 
   try {
+    // Send CSV data to background
+    chrome.runtime.sendMessage({
+      type: 'UPDATE_CONTEXT_PARTIAL',
+      data: { 
+        csvDatasets: csvDatasets,
+        draftedPlayers: allUnavailable // Just the names as strings
+      }
+    }).catch(() => {});
+    
     const response = await chrome.runtime.sendMessage({
       type: 'OPENAI_REQUEST',
       messageId: messageId,
@@ -1263,31 +1701,12 @@ DRAFTED (${totalPicks}): ${draftedList}`;
         messages: [
           { 
             role: 'system', 
-            content: `You are an expert fantasy football draft assistant for the 2024-2025 NFL season.
-
-INFORMATION PRIORITY:
-1. If CSV/screenshot data exists: use EXCLUSIVELY for rankings/tiers
-2. If no CSV/screenshot: use general fantasy knowledge but say "Based on consensus rankings..."
-3. ALWAYS check "ALL DRAFTED PLAYERS" list before recommendations
-4. [IMAGE ANALYSIS] and CSV data override pre-trained knowledge when available
-
-CRITICAL RULES:
-- NEVER recommend a player who is already drafted
-- If CSV exists: "Based on your rankings, [player] is ranked #X"
-- If no CSV: "Based on consensus rankings, [player]..." or suggest uploading custom rankings
-- For injuries/trades: Your data is outdated - use tools or ask for current info
-
-RESPONSE GUIDELINES:
-- Be concise and decisive (2-3 sentences max)
-- Focus on specific recommendations not general analysis
-
-Current draft context: ${context}
-
-${csvDatasets && Object.keys(csvDatasets).length > 0 ? 
-  `\nUSING YOUR RANKINGS: ${Object.values(csvDatasets).map(ds => ds.name).join(', ')}` : 
-  '\nUSING CONSENSUS RANKINGS (upload CSV for your custom rankings)'}`
+            content: `Draft assistant. ${allUnavailable.length} players unavailable.
+${context}
+Give ONE pick with supporting data. Format: "PICK: [Name] - [key stats]"
+${csvDatasets && Object.keys(csvDatasets).length > 0 ? 'Using your rankings' : 'Using consensus'}`
           },
-          ...chatHistory.slice(-6), // Include recent chat history for continuity
+          ...chatHistory.slice(-4), // Reduce chat history to save tokens
           { role: 'user', content: message }
         ]
       }

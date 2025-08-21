@@ -163,7 +163,7 @@ async function searchFantasyNews(query) {
 
 router.post('/chat', async (req, res) => {
   try {
-    const { message, context } = req.body;
+    const { message, context, model: requestedModel, provider } = req.body;
     
     let systemPrompt = `You are a fantasy football draft assistant. You help users make optimal draft decisions during their fantasy football draft.
 
@@ -197,42 +197,111 @@ Use tools for:
 
 Be brutally honest with the user - It is better to hurt feelings than to give bad advice. When CSV data exists, strictly follow their rankings. When not, provide best consensus advice while suggesting they upload their custom rankings.
 
+// Create a simplified context without duplicates
+    const simplifiedContext = context ? {
+      myDraftPosition: context.myDraftPosition,
+      totalTeams: context.totalTeams,
+      currentPick: context.currentPick,
+      scoringSystem: context.scoringSystem,
+      leagueSettings: context.leagueSettings,
+      keepers: context.keepers,
+      // Don't include full draftedPlayers if we have ESPN data
+      draftedPlayers: context.espnData?.draftedPlayers ? [] : context.draftedPlayers,
+      myTeam: context.myTeam,
+      // Exclude conversation history from context (it's added separately)
+      tierData: context.tierData,
+      // Only include derived context if no ESPN data
+      derivedContext: context.espnData ? undefined : context.derivedContext
+    } : null;
+
 Context about the user's league:
-${context ? JSON.stringify(context, null, 2) : 'No league context provided yet'}`;
+- Draft Position: ${simplifiedContext?.myDraftPosition || 'Unknown'}
+- Total Teams: ${simplifiedContext?.totalTeams || 'Unknown'}
+- Current Pick: ${simplifiedContext?.currentPick || 'Unknown'}
+- Scoring: ${simplifiedContext?.scoringSystem || 'Unknown'}
+- Roster Settings: ${simplifiedContext?.leagueSettings ? Object.entries(simplifiedContext.leagueSettings).map(([k,v]) => `${k.toUpperCase()}: ${v}`).join(', ') : 'Unknown'}`;
+
+    // Add keeper information to the system prompt
+    if (context?.keepers && context.keepers.length > 0) {
+      systemPrompt += `
+
+KEEPER PLAYERS (Already kept by other teams - DO NOT recommend these players):
+${context.keepers.map(keeper => `- ${keeper}`).join('\n')}
+
+IMPORTANT: These players are NOT available in the draft. Never suggest them as options.`;
+    }
 
     if (context?.espnData) {
+      const espnData = context.espnData;
+      
+      // Create a simplified list of drafted player names
+      const draftedPlayerNames = espnData.draftedPlayers?.map(pick => 
+        pick.player?.name || pick.playerName
+      ).filter(Boolean) || [];
+      
       systemPrompt += `
 
 LIVE ESPN DRAFT DATA:
-- Draft Status: ${context.espnData.draftStatus?.inProgress ? 'IN PROGRESS' : context.espnData.draftStatus?.completed ? 'COMPLETED' : 'NOT STARTED'}
-- Current Pick #: ${context.espnData.currentPick || 'Unknown'}
-- Players Already Drafted: ${context.espnData.draftedPlayers?.length || 0}
+- Draft Status: ${espnData.draftStatus?.inProgress ? 'IN PROGRESS' : 'NOT STARTED'}
+- Current Pick: #${espnData.currentPick || 'Unknown'}
+- Total Drafted: ${draftedPlayerNames.length}
 
-Your Current Team:
-${context.espnData.myTeam?.map(player => `- ${player.name} (${player.position})`).join('\n') || 'No players drafted yet'}
+Your Team (${espnData.myTeam?.length || 0} players):
+${espnData.myTeam?.slice(0, 15).map(p => `${p.name} (${p.position})`).join(', ') || 'None'}
 
-All Drafted Players:
-${context.espnData.draftedPlayers?.map(pick => 
-  `Pick #${pick.pickNumber}: ${pick.player.name} (${pick.player.position}) to ${pick.teamName}`
-).join('\n') || 'No players drafted yet'}
+Recently Drafted (last 10):
+${espnData.draftedPlayers?.slice(-10).map(pick => 
+  `${pick.player?.name || pick.playerName} (${pick.player?.position || pick.position})`
+).join(', ') || 'None'}
 
-IMPORTANT: Use this live ESPN data to provide accurate recommendations about who is still available and what your team needs.`;
+All Drafted Players (${draftedPlayerNames.length} total):
+${draftedPlayerNames.slice(0, 50).join(', ')}${draftedPlayerNames.length > 50 ? '... and ' + (draftedPlayerNames.length - 50) + ' more' : ''}`;
+    }
+    
+    // Also add any derived drafted player names to ensure nothing is missed
+    if (context?.derivedContext?.draftedPlayerNames && context.derivedContext.draftedPlayerNames.length > 0) {
+      const additionalNames = context.derivedContext.draftedPlayerNames.filter(name => 
+        !systemPrompt.includes(name)
+      );
+      
+      if (additionalNames.length > 0) {
+        systemPrompt += `
+
+ADDITIONAL DRAFTED PLAYERS (from all sources):
+${additionalNames.join(', ')}`;
+      }
     }
 
-    // Add conversation context with analyzed data
+    // Add conversation context with analyzed data (summarized)
     if (context?.conversationContext?.screenshots) {
       const screenshots = Object.values(context.conversationContext.screenshots);
       
       if (screenshots.length > 0) {
         systemPrompt += `
 
-PREVIOUSLY ANALYZED SCREENSHOTS:
-${screenshots.map((screenshot, index) => 
-  `${index + 1}. ${screenshot.name} (${screenshot.position}) - ${screenshot.timestamp}:
-${screenshot.analysis}${screenshot.tierData ? '\nTier Data: ' + JSON.stringify(screenshot.tierData.tiers || {}, null, 2) : ''}`
-).join('\n\n')}
-
-IMPORTANT: Reference this previously analyzed data when answering questions. For example, if the user asks about QB rankings, refer to the specific tier data and projected points from the analysis above.`;
+ANALYZED SCREENSHOTS (${screenshots.length} total):`;
+        
+        // Group by position and summarize
+        const byPosition = {};
+        screenshots.forEach(ss => {
+          if (!byPosition[ss.position]) byPosition[ss.position] = [];
+          byPosition[ss.position].push(ss);
+        });
+        
+        Object.entries(byPosition).forEach(([pos, ssList]) => {
+          const latest = ssList[ssList.length - 1]; // Use most recent
+          systemPrompt += `\n${pos}: Analyzed ${ssList.length} chart(s)`;
+          
+          // Include tier summary if available
+          if (latest.tierData?.tiers) {
+            const tierCount = Object.keys(latest.tierData.tiers).length;
+            const totalPlayers = Object.values(latest.tierData.tiers)
+              .reduce((sum, tier) => sum + (tier.Players?.length || 0), 0);
+            systemPrompt += ` - ${tierCount} tiers, ${totalPlayers} players total`;
+          }
+        });
+        
+        systemPrompt += `\n\nUse the analyzed tier data to provide accurate rankings.`;
       }
     }
 
@@ -270,9 +339,9 @@ Respond in the following format:
     // Build conversation history
     let conversationMessages = [{ role: "system", content: systemPrompt }];
     
-    // Add recent conversation history (last 8 messages to keep context manageable)
+    // Add recent conversation history (last 4 messages to keep context manageable)
     if (context?.conversationHistory && context.conversationHistory.length > 1) {
-      const recentHistory = context.conversationHistory.slice(-8);
+      const recentHistory = context.conversationHistory.slice(-4);
       conversationMessages.push(...recentHistory.map(msg => ({
         role: msg.role,
         content: msg.content
@@ -282,12 +351,30 @@ Respond in the following format:
     // Add current message
     conversationMessages.push({ role: "user", content: message });
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+    // Determine model and parameters
+    const isGPT5Model = requestedModel && (
+      requestedModel.includes('gpt-5') || 
+      requestedModel.includes('gpt5')
+    );
+    
+    const modelToUse = requestedModel || "gpt-4o-mini";
+    
+    // Build completion parameters
+    const completionParams = {
+      model: modelToUse,
       messages: conversationMessages,
-      max_tokens: 1000, // Reduced from 1500 to save tokens
-      temperature: 0.7,
-      tools: [
+      temperature: isGPT5Model ? 1.0 : 0.3, // Lowered for more data-based responses
+    };
+
+    // Add max_tokens or max_completion_tokens based on model
+    if (isGPT5Model) {
+      completionParams.max_completion_tokens = 8000; // Greatly increased for GPT-5
+    } else {
+      completionParams.max_tokens = 4000; // Doubled to prevent any cutoffs
+    }
+
+    // Add tools
+    completionParams.tools = [
         {
           type: "function",
           function: {
@@ -334,9 +421,11 @@ Respond in the following format:
             }
           }
         }
-      ],
-      tool_choice: "auto"
-    });
+      ];
+    
+    completionParams.tool_choice = "auto";
+
+    const completion = await openai.chat.completions.create(completionParams);
 
     // Handle function calls with loop for multiple rounds
     let currentMessages = [...conversationMessages];
@@ -391,13 +480,20 @@ Respond in the following format:
       // Add function results to conversation
       currentMessages.push(...functionResults);
       
-      // Make next API call
-      currentCompletion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
+      // Make next API call with same parameters
+      const nextCompletionParams = {
+        model: modelToUse,
         messages: currentMessages,
-        max_tokens: 1500,
-        temperature: 0.7,
-        tools: [
+        temperature: isGPT5Model ? 1.0 : 0.3,
+      };
+      
+      if (isGPT5Model) {
+        nextCompletionParams.max_completion_tokens = 8000;
+      } else {
+        nextCompletionParams.max_tokens = 4000;
+      }
+      
+      nextCompletionParams.tools = [
           {
             type: "function",
             function: {
@@ -444,9 +540,11 @@ Respond in the following format:
               }
             }
           }
-        ],
-        tool_choice: "auto"
-      });
+        ];
+        
+      nextCompletionParams.tool_choice = "auto";
+      
+      currentCompletion = await openai.chat.completions.create(nextCompletionParams);
     }
     
     if (iterations >= maxIterations) {
@@ -464,7 +562,7 @@ Respond in the following format:
 
 router.post('/analyze-screenshot', async (req, res) => {
   try {
-    const { imageBase64, question, position, isRankingChart, conversationContext } = req.body;
+    const { imageBase64, question, position, isRankingChart, conversationContext, context } = req.body;
     
     let prompt;
     if (isRankingChart) {
@@ -515,7 +613,7 @@ router.post('/analyze-screenshot', async (req, res) => {
           ]
         }
       ],
-      max_tokens: 1500,
+      max_tokens: 3000, // Increased for detailed analysis
     });
 
     const response = completion.choices[0].message.content;

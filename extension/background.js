@@ -1,6 +1,14 @@
 // Background script for Fantasy Draft Assistant
 console.log('🏈 Fantasy Draft Assistant background script loaded');
 
+// Load saved keepers on startup
+chrome.storage.local.get(['keepers'], (result) => {
+  if (result.keepers && Array.isArray(result.keepers)) {
+    draftState.keepers = result.keepers;
+    console.log('📋 Loaded keepers:', draftState.keepers.length);
+  }
+});
+
 let draftState = {
   picks: [],
   teams: [],
@@ -8,7 +16,8 @@ let draftState = {
   leagueId: null,
   myTeam: [],
   watchList: [],
-  userRoster: []
+  userRoster: [],
+  keepers: []
 };
 
 // Central context object for compact chat context and persistence
@@ -17,7 +26,7 @@ let context = {
   userTeamName: null,
   // Arrays of names only to minimize tokens
   myTeam: [], // ["Player Name", ...]
-  draftedPlayers: [], // ["Player Name", ...]
+  draftedPlayers: [], // ["Player Name", ...] - includes both drafted and keeper players
   screenshots: {}, // id -> { name, type, dataDump, summary, timestamp }
   csvDatasets: {}, // id -> { id, name, columns, normalizedColumns, rows, timestamp }
   lastUpdated: null
@@ -29,8 +38,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   switch (request.type) {
     case 'INIT_DATA':
-      // Initialize with data from content script
+      // Initialize with data from content script, but preserve keepers
+      const currentKeepers = draftState.keepers || [];
       draftState = { ...draftState, ...request.data };
+      if (currentKeepers.length > 0 && (!draftState.keepers || draftState.keepers.length === 0)) {
+        draftState.keepers = currentKeepers;
+      }
       console.log('📊 Draft state initialized:', draftState);
       // Seed context with league/team if provided
       if (request.data.leagueId) context.leagueId = request.data.leagueId;
@@ -88,7 +101,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       break;
 
     case 'RESET_CONTEXT':
-      context = { leagueId: draftState.leagueId || null, userTeamName: draftState.userTeamName || null, myTeam: [], draftedPlayers: [], screenshots: {}, lastUpdated: Date.now() };
+      context = { leagueId: draftState.leagueId || null, userTeamName: draftState.userTeamName || null, myTeam: [], draftedPlayers: [], screenshots: {}, csvDatasets: {}, lastUpdated: Date.now() };
       saveContextToStorage();
       sendResponse({ ok: true });
       break;
@@ -99,12 +112,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         if (typeof request.data.leagueId !== 'undefined') context.leagueId = request.data.leagueId;
         if (typeof request.data.userTeamName !== 'undefined') context.userTeamName = request.data.userTeamName;
         if (Array.isArray(request.data.myTeam)) context.myTeam = request.data.myTeam;
-        if (Array.isArray(request.data.draftedPlayers)) context.draftedPlayers = request.data.draftedPlayers;
+        if (Array.isArray(request.data.draftedPlayers)) {
+          context.draftedPlayers = request.data.draftedPlayers;
+          console.log('📋 Updated drafted players in context (includes keepers):', context.draftedPlayers.length);
+        }
         if (request.data.screenshots && typeof request.data.screenshots === 'object') {
           context.screenshots = { ...context.screenshots, ...request.data.screenshots };
         }
-        if (request.data.csvDatasets && typeof request.data.csvDatasets === 'object') {
-          context.csvDatasets = { ...context.csvDatasets, ...request.data.csvDatasets };
+        if (request.data.csvDatasets !== undefined) {
+          context.csvDatasets = request.data.csvDatasets;
+          console.log('📊 Updated CSV datasets in context:', Object.keys(request.data.csvDatasets || {}).length);
         }
         context.lastUpdated = Date.now();
         saveContextToStorage();
@@ -187,8 +204,13 @@ async function loadStateFromStorage() {
   return new Promise((resolve) => {
     chrome.storage.local.get(['draftState', 'settings'], (result) => {
       if (result.draftState && result.draftState.picks) {
+        const currentKeepers = draftState.keepers || [];
         draftState = { ...draftState, ...result.draftState };
-        console.log('📂 Draft state loaded from storage:', draftState.picks?.length || 0, 'picks');
+        // Preserve keepers if they were already loaded
+        if (currentKeepers.length > 0 && (!draftState.keepers || draftState.keepers.length === 0)) {
+          draftState.keepers = currentKeepers;
+        }
+        console.log('📂 Draft state loaded from storage:', draftState.picks?.length || 0, 'picks,', draftState.keepers?.length || 0, 'keepers');
       }
       
       // Also ensure settings are available
@@ -313,6 +335,10 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
     // Get keys from storage
     const result = await chrome.storage.local.get(['openaiApiKey', 'googleApiKey', 'groqApiKey', 'settings', 'pendingChatMessage']);
     
+    // Get CSV data from request or context
+    const csvDatasets = requestData.csvData ? Object.values(requestData.csvData) : 
+                       context.csvDatasets ? Object.values(context.csvDatasets) : [];
+    
     // Choose model: prefer settings.chatModel for text chat, fallback to gpt-4o-mini
     const chatModel = (result.settings?.chatModel || 'gpt-4o-mini').trim();
 
@@ -352,39 +378,64 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
 
     console.log('🔧 LLM routing:', { provider, apiUrl, modelConfigured: chatModel, modelSent: modelForApi });
 
-    // Build context for the model - include actual CSV data for rankings
-    const csvDatasets = Object.values(context.csvDatasets || {}).slice(0, 2);
+    // CSV datasets already retrieved above from request or context
+    
+    // Create unavailable list (keepers are now included in draftedPlayers)
+    const allUnavailable = (context.draftedPlayers || [])
+      .filter(item => item && typeof item === 'string');
+    
+    console.log('📋 Unavailable players:', allUnavailable.length, 'total');
+    
+    console.log('📊 CSV datasets available:', csvDatasets.length, csvDatasets.map(ds => ds.name));
+    
     const compactContext = {
-      myTeam: (context.myTeam || []).slice(-15).join(', '),
-      draftedCount: (context.draftedPlayers || []).length,
-      recentDrafted: (context.draftedPlayers || []).slice(-20).join(', '),
-      // Include full screenshot data if available
-      lastScreenshot: context.screenshots ? Object.values(context.screenshots).slice(-1)[0] : null,
-      // Include actual CSV data for rankings (all rows, optimized for tokens)
+      // Only include unavailable list as array of strings
+      allUnavailable: allUnavailable,
+      // Basic counts only
+      counts: `${allUnavailable.length}drafted,${(context.myTeam || []).length}team`,
+      // Only last screenshot summary if exists
+      lastScreenshot: context.screenshots ? Object.values(context.screenshots).slice(-1)[0]?.summary : null,
+      // Include full CSV data for accurate rankings
       csvData: csvDatasets.length > 0 ? csvDatasets.map(ds => ({
         name: ds.name,
-        // Include all rows but only essential columns
+        // Include all rows but compress format
         data: (ds.rows || []).map(row => {
-          // Only include key columns to save tokens
-          const compact = {};
-          // Primary identifiers
+          // Extract player name
+          let playerName = null;
           ['player', 'name', 'player_name', 'full_name'].forEach(col => {
-            if (row[col] !== undefined && !compact.name) compact.name = row[col];
+            if (row[col] !== undefined && !playerName) playerName = row[col];
           });
-          // Position
+          
+          if (!playerName) return null;
+          
+          // Build compact row with abbreviated keys
+          const compact = { n: playerName };
+          
+          // Add position
           ['position', 'pos'].forEach(col => {
-            if (row[col] !== undefined && !compact.pos) compact.pos = row[col];
+            if (row[col] !== undefined && !compact.p) compact.p = row[col];
           });
-          // Rankings/scoring
-          ['rank', 'ranking', 'overall_rank', 'tier', 'points', 'projection', 'proj', 'value', 'adp'].forEach(col => {
-            if (row[col] !== undefined) compact[col] = row[col];
-          });
-          // Team if available
-          ['team', 'tm'].forEach(col => {
-            if (row[col] !== undefined && !compact.team) compact.team = row[col];
-          });
+          
+          // Add rank/tier/points (all that exist)
+          if (row.rank !== undefined) compact.r = row.rank;
+          else if (row.overall_rank !== undefined) compact.r = row.overall_rank;
+          else if (row.ranking !== undefined) compact.r = row.ranking;
+          
+          if (row.tier !== undefined) compact.t = row.tier;
+          if (row.points !== undefined) compact.pts = Math.round(row.points);
+          else if (row.projection !== undefined) compact.pts = Math.round(row.projection);
+          else if (row.proj !== undefined) compact.pts = Math.round(row.proj);
+          
+          // Add team if available
+          if (row.team !== undefined) compact.tm = row.team;
+          else if (row.tm !== undefined) compact.tm = row.tm;
+          
+          // Add any other important numeric fields (ADP, value, etc)
+          if (row.adp !== undefined) compact.adp = row.adp;
+          if (row.value !== undefined) compact.v = row.value;
+          
           return compact;
-        }).filter(row => row.name) // Only keep rows with valid player names
+        }).filter(row => row !== null)
       })) : null
     };
 
@@ -416,24 +467,11 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
       }
     ];
 
-    const systemPrompt = `Fantasy draft assistant. Be concise (2-3 sentences max).
-
-INFORMATION PRIORITY:
-1. CONTEXT.csvData - User's uploaded rankings (if available, use EXCLUSIVELY for rankings)
-2. CONTEXT.lastScreenshot - Recent screenshot analysis (trust completely)
-3. Tool results - Current injury/news data
-4. Pre-trained knowledge - Use ONLY if no CSV/screenshot data exists
-
-RULES:
-- If CSV data exists: use it exclusively for rankings/tiers
-- If no CSV data: can use general fantasy knowledge, but mention "Based on consensus rankings..."
-- Check CONTEXT.recentDrafted before recommending ANY player
-- NEVER recommend already drafted players
-- For injuries/trades: always use tools or say "I'll check current info"
-
-CONTEXT contains: myTeam, draftedCount, recentDrafted, lastScreenshot, csvData
-
-Tools: fetch_player_injury_news, search_fantasy_news, fetch_team_starters`;
+    const systemPrompt = `Fantasy draft assistant. Give ONE clear recommendation with data, unless the player asks for more suggestions.
+Format: "PICK: [Player] - [1-2 key stats/reasons]"
+NEVER recommend from CONTEXT.allUnavailable list. Don't mention unavailable players.
+Use CONTEXT.csvData rankings if available (n=name, r=rank, t=tier, pts=points).
+ADP = average draft position (ie 5.06 means 5th round, 6th pick).`;
 
     let messages = [
       { role: 'system', content: systemPrompt },
@@ -441,18 +479,30 @@ Tools: fetch_player_injury_news, search_fantasy_news, fetch_team_starters`;
       ...requestData.messages
     ];
 
+    // Determine if it's a GPT-5 model
+    const isGPT5Model = modelForApi.includes('gpt-5') || modelForApi.includes('gpt5');
+    
+    // Build request parameters
+    const requestParams = {
+      model: modelForApi,
+      messages,
+      temperature: isGPT5Model ? 1.0 : 0.3, // Lower temperature for more data-based responses
+      tools,
+      tool_choice: 'auto'
+    };
+    
+    // Add max_tokens or max_completion_tokens based on model
+    if (isGPT5Model) {
+      requestParams.max_completion_tokens = 8000; // Much higher for GPT-5
+    } else {
+      requestParams.max_tokens = 4000; // Increased to prevent cutoffs
+    }
+    
     // First call allowing tool suggestions
     let response = await fetch(apiUrl, {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        model: modelForApi,
-        messages,
-        max_tokens: 1500,
-        temperature: 0.7,
-        tools,
-        tool_choice: 'auto'
-      })
+      body: JSON.stringify(requestParams)
     });
 
     const initialText = await response.text();
@@ -492,15 +542,22 @@ Tools: fetch_player_injury_news, search_fantasy_news, fetch_team_starters`;
       }
 
       // Second call with tool results
+      const secondRequestParams = {
+        model: modelForApi,
+        messages: [ ...messages, initial.choices[0].message, ...toolMessages ],
+        temperature: isGPT5Model ? 1.0 : 0.3
+      };
+      
+      if (isGPT5Model) {
+        secondRequestParams.max_completion_tokens = 8000;
+      } else {
+        secondRequestParams.max_tokens = 4000;
+      }
+      
       const secondResponse = await fetch(apiUrl, {
         method: 'POST',
         headers,
-        body: JSON.stringify({
-          model: modelForApi,
-          messages: [ ...messages, initial.choices[0].message, ...toolMessages ],
-          max_tokens: 1500,
-          temperature: 0.7
-        })
+        body: JSON.stringify(secondRequestParams)
       });
       const finalText = await secondResponse.text();
       try { data = JSON.parse(finalText); } catch { data = { raw: finalText }; }
@@ -530,6 +587,21 @@ Tools: fetch_player_injury_news, search_fantasy_news, fetch_team_starters`;
         error: `Received empty response from ${provider}. Please try a different model.` 
       });
       return;
+    }
+    
+    // Log if AI mentions unavailable players (but don't modify response)
+    const responseUpper = responseContent.toUpperCase();
+    const violatingPlayers = allUnavailable.filter(player => {
+      if (!player || typeof player !== 'string') return false;
+      try {
+        return responseUpper.includes(player.toUpperCase());
+      } catch (e) {
+        return false;
+      }
+    });
+    
+    if (violatingPlayers.length > 0) {
+      console.warn('⚠️ AI mentioned unavailable players:', violatingPlayers);
     }
     
     // Store the response for when popup reopens

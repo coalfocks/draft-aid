@@ -13,7 +13,8 @@ let draftState = {
   tierData: {},
   espnConfig: null,
   espnData: null,
-  lastESPNSync: null
+  lastESPNSync: null,
+  keepers: []
 };
 
 const espnService = new ESPNService();
@@ -28,7 +29,8 @@ router.post('/configure', (req, res) => {
     myDraftPosition, 
     totalTeams,
     scoringSystem,
-    espnConfig
+    espnConfig,
+    keepers
   } = req.body;
   
   draftState.leagueSettings = leagueSettings;
@@ -36,6 +38,7 @@ router.post('/configure', (req, res) => {
   draftState.totalTeams = totalTeams;
   draftState.scoringSystem = scoringSystem;
   draftState.espnConfig = espnConfig;
+  draftState.keepers = keepers || [];
 
   if (espnConfig && espnConfig.enabled) {
     if (espnConfig.espnS2 && espnConfig.swid) {
@@ -88,6 +91,21 @@ router.post('/tier-data', (req, res) => {
   };
   
   res.json({ message: 'Tier data saved', tierData: draftState.tierData });
+});
+
+router.post('/update-keepers', (req, res) => {
+  const { keepers } = req.body;
+  
+  if (!Array.isArray(keepers)) {
+    return res.status(400).json({ error: 'Keepers must be an array' });
+  }
+  
+  draftState.keepers = keepers;
+  
+  res.json({ 
+    message: 'Keepers updated successfully', 
+    keepers: draftState.keepers 
+  });
 });
 
 router.post('/espn-sync', async (req, res) => {
@@ -239,7 +257,8 @@ router.post('/reset', (req, res) => {
     tierData: {},
     espnConfig: null,
     espnData: null,
-    lastESPNSync: null
+    lastESPNSync: null,
+    keepers: []
   };
   
   res.json({ message: 'Draft state reset', draftState });
