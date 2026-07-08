@@ -52,6 +52,7 @@ const elements = {
   openaiKey: document.getElementById('openai-key'),
   googleKey: document.getElementById('google-key'),
   groqKey: document.getElementById('groq-key'),
+  anthropicKey: document.getElementById('anthropic-key'),
   myTeamName: document.getElementById('my-team-name'),
   draftPosition: document.getElementById('draft-position'),
   chatModel: document.getElementById('chat-model'),
@@ -96,6 +97,9 @@ async function initialize() {
   // Update UI
   updateUI();
   
+  // Load season roster for strategy tab
+  loadSeasonRoster();
+  
   // Ensure draftedPlayers is synced with initial keepers
   if (draftState.keepers && draftState.keepers.length > 0) {
     chrome.runtime.sendMessage({
@@ -116,7 +120,7 @@ async function initialize() {
 
 // Load settings from storage
 async function loadSettings() {
-  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount', 'csvDatasets', 'pendingChatResponse', 'keepers']);
+  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'anthropicApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount', 'csvDatasets', 'pendingChatResponse', 'keepers']);
   
   // Load from either settings object or direct key
   const apiKey = result.openaiApiKey || result.settings?.openaiApiKey;
@@ -229,6 +233,7 @@ async function loadSettings() {
   if (elements.openaiKey) elements.openaiKey.value = settings.openaiApiKey || '';
   if (elements.googleKey) elements.googleKey.value = result.googleApiKey || settings.googleApiKey || '';
   if (elements.groqKey) elements.groqKey.value = result.groqApiKey || settings.groqApiKey || '';
+  if (elements.anthropicKey) elements.anthropicKey.value = result.anthropicApiKey || settings.anthropicApiKey || '';
   if (elements.myTeamName) elements.myTeamName.value = settings.myTeamName || '';
   if (elements.draftPosition) elements.draftPosition.value = settings.draftPosition || '';
   if (elements.chatModel) elements.chatModel.value = settings.chatModel || 'gpt-4o-mini';
@@ -452,6 +457,13 @@ function setupEventListeners() {
   elements.csvUploadBtn?.addEventListener('click', () => elements.csvUpload?.click());
   elements.csvUpload?.addEventListener('change', handleCsvUpload);
   elements.clearCsvsBtn?.addEventListener('click', clearAllCSVs);
+  // Fetch CSV from URL
+  const csvUrlInput = document.getElementById('csv-url-input');
+  const fetchCsvBtn = document.getElementById('fetch-csv-url');
+  fetchCsvBtn?.addEventListener('click', fetchCsvFromUrl);
+  csvUrlInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') fetchCsvFromUrl();
+  });
   // CSV chips: handle remove via event delegation
   elements.csvChips?.addEventListener('click', (e) => {
     const btn = e.target.closest('.chip-btn');
@@ -465,6 +477,16 @@ function setupEventListeners() {
     addDebugLog(`Removed CSV: ${btn.textContent.replace(/^×\s*/, '')}`);
   });
   
+  // Strategy tab actions
+  document.getElementById('str-trade-targets')?.addEventListener('click', () => runStrategyAnalysis('trade'));
+  document.getElementById('str-waiver')?.addEventListener('click', () => runStrategyAnalysis('waiver'));
+  document.getElementById('str-game-theory')?.addEventListener('click', () => runStrategyAnalysis('game-theory'));
+  document.getElementById('str-value')?.addEventListener('click', () => runStrategyAnalysis('value'));
+  document.getElementById('str-draft-recap')?.addEventListener('click', () => runStrategyAnalysis('draft-recap'));
+  document.getElementById('str-sleepers')?.addEventListener('click', () => runStrategyAnalysis('sleepers'));
+  document.getElementById('add-roster-player')?.addEventListener('click', addRosterPlayer);
+  document.getElementById('pull-roster')?.addEventListener('click', pullRosterFromDraftBoard);
+
   // Settings actions
   elements.saveSettingsBtn?.addEventListener('click', saveSettings);
   elements.exportDataBtn?.addEventListener('click', exportData);
@@ -779,6 +801,51 @@ async function handleCsvUpload(event) {
   updateCsvUI();
   // Clear input
   event.target.value = '';
+}
+
+// Fetch CSV from a URL (e.g. FFA download link)
+async function fetchCsvFromUrl() {
+  const urlInput = document.getElementById('csv-url-input');
+  if (!urlInput) return;
+  const url = urlInput.value.trim();
+  if (!url) return;
+
+  const btn = document.getElementById('fetch-csv-url');
+  const origText = btn?.textContent;
+  if (btn) { btn.textContent = '⏳ Fetching...'; btn.disabled = true; }
+
+  try {
+    const resp = await fetch(url, { credentials: 'include' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text = await resp.text();
+    if (!text || text.length < 10) throw new Error('Empty response');
+
+    const parsed = parseCsvText(text);
+    if (!parsed.rows || parsed.rows.length === 0) throw new Error('No rows parsed from CSV');
+
+    // Derive a friendly name from URL
+    let name = 'URL Dataset';
+    try {
+      const u = new URL(url);
+      name = u.pathname.split('/').pop() || u.hostname;
+      if (!name.endsWith('.csv')) name += '.csv';
+    } catch {}
+
+    const id = `url_${Date.now()}`;
+    csvDatasets[id] = { id, name, ...parsed, timestamp: new Date().toISOString(), sourceUrl: url };
+    addDebugLog(`CSV fetched from URL: ${name} — rows: ${parsed.rows.length}, cols: ${parsed.normalizedColumns.length}`);
+
+    chrome.storage.local.set({ csvDatasets }).catch(() => {});
+    chrome.runtime.sendMessage({ type: 'UPDATE_CONTEXT_PARTIAL', data: { csvDatasets } }).catch(() => {});
+    updateCsvUI();
+    urlInput.value = '';
+  } catch (e) {
+    console.error('CSV URL fetch error:', e);
+    addDebugLog(`❌ CSV fetch failed: ${e.message}`);
+    alert(`Failed to fetch CSV: ${e.message}\n\nMake sure you're logged into the source site and the URL is accessible.`);
+  } finally {
+    if (btn) { btn.textContent = origText; btn.disabled = false; }
+  }
 }
 
 function clearAllCSVs() {
@@ -2139,6 +2206,7 @@ async function saveSettings() {
   settings.openaiApiKey = elements.openaiKey?.value || '';
   settings.googleApiKey = elements.googleKey?.value || '';
   settings.groqApiKey = elements.groqKey?.value || '';
+  settings.anthropicApiKey = elements.anthropicKey?.value || '';
   settings.myTeamName = elements.myTeamName?.value || '';
   settings.draftPosition = elements.draftPosition?.value || '';
   settings.chatModel = elements.chatModel?.value || 'gpt-4o-mini';
@@ -2150,7 +2218,8 @@ async function saveSettings() {
       settings: settings,
       openaiApiKey: settings.openaiApiKey, // Also save separately for background script
       googleApiKey: settings.googleApiKey,
-      groqApiKey: settings.groqApiKey
+      groqApiKey: settings.groqApiKey,
+      anthropicApiKey: settings.anthropicApiKey
     });
     console.log('✅ Settings saved successfully');
     
@@ -2311,6 +2380,167 @@ document.addEventListener('visibilitychange', () => {
     }).catch(() => {});
   }
 });
+
+// ============================================================
+// STRATEGY TAB LOGIC
+// ============================================================
+
+let seasonRoster = []; // [{name, pos}]
+
+// Load/save season roster
+function loadSeasonRoster() {
+  chrome.storage.local.get(['seasonRoster'], (result) => {
+    seasonRoster = result.seasonRoster || [];
+    renderRosterList();
+  });
+}
+
+function saveSeasonRoster() {
+  chrome.storage.local.set({ seasonRoster });
+}
+
+function renderRosterList() {
+  const list = document.getElementById('roster-list');
+  if (!list) return;
+  if (seasonRoster.length === 0) {
+    list.innerHTML = '<div class="no-data">Add your current roster for trade/waiver analysis</div>';
+    return;
+  }
+  list.innerHTML = seasonRoster.map((p, i) => `
+    <div class="player-card">
+      <div>
+        <span class="player-name">${escapeHtml(p.name)}</span>
+        <span class="player-position">${p.pos}</span>
+      </div>
+      <button class="btn btn-small" onclick="removeRosterPlayer(${i})">✕</button>
+    </div>
+  `).join('');
+}
+
+function addRosterPlayer() {
+  const nameEl = document.getElementById('roster-name-input');
+  const posEl = document.getElementById('roster-pos-select');
+  if (!nameEl || !nameEl.value.trim()) return;
+  seasonRoster.push({ name: nameEl.value.trim(), pos: posEl?.value || 'QB' });
+  nameEl.value = '';
+  saveSeasonRoster();
+  renderRosterList();
+}
+
+function removeRosterPlayer(idx) {
+  seasonRoster.splice(idx, 1);
+  saveSeasonRoster();
+  renderRosterList();
+}
+window.removeRosterPlayer = removeRosterPlayer;
+
+function pullRosterFromDraftBoard() {
+  // Pull from draftState.myTeam into seasonRoster
+  if (!draftState.myTeam || draftState.myTeam.length === 0) {
+    alert('No players on your draft board team yet.');
+    return;
+  }
+  const existing = new Set(seasonRoster.map(p => p.name.toLowerCase()));
+  let added = 0;
+  for (const p of draftState.myTeam) {
+    if (!existing.has((p.name || '').toLowerCase())) {
+      seasonRoster.push({ name: p.name, pos: p.position || 'QB' });
+      added++;
+    }
+  }
+  saveSeasonRoster();
+  renderRosterList();
+  addDebugLog(`Pulled ${added} players from draft board to roster`);
+}
+
+// Build the strategy prompt and call the LLM
+async function runStrategyAnalysis(type) {
+  const outputSection = document.getElementById('strategy-output-section');
+  const outputEl = document.getElementById('strategy-output');
+  const titleEl = document.getElementById('strategy-output-title');
+  if (!outputSection || !outputEl) return;
+
+  const labels = {
+    'trade': '🔄 Trade Targets',
+    'waiver': '📡 Waiver Wire Picks',
+    'game-theory': '🧠 Game Theory & Lineup ROI',
+    'value': '📈 Value Board (ADP vs Performance)',
+    'draft-recap': '🎓 Draft Grade & Recap',
+    'sleepers': '😴 Sleepers & Busts'
+  };
+  titleEl.textContent = labels[type] || 'Analysis';
+  outputSection.style.display = 'block';
+  outputEl.innerHTML = '<div class="strategy-loading"><div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div> Analyzing...</div>';
+
+  // Gather context
+  const scoring = document.getElementById('scoring-type')?.value || 'ppr';
+  const leagueSize = document.getElementById('league-size')?.value || '12';
+  const currentWeek = document.getElementById('current-week')?.value || '1';
+  const rosterNames = seasonRoster.map(p => p.name);
+  const rosterStr = rosterNames.length > 0 ? rosterNames.join(', ') : 'Not set';
+  const myTeamStr = (draftState.myTeam || []).map(p => p.name).join(', ') || 'Not set';
+  const draftedStr = (draftState.picks || []).slice(-30).map(p => p.player?.name).filter(Boolean).join(', ') || 'None';
+  const csvCount = Object.keys(csvDatasets).length;
+
+  const prompts = {
+    'trade': `You are a fantasy football trade analyst. My roster: ${rosterStr}. My drafted team: ${myTeamStr}. League: ${leagueSize} teams, ${scoring} scoring, Week ${currentWeek}. Recently drafted: ${draftedStr}. I have ${csvCount} ranking datasets loaded.
+
+Identify 3-5 BUY-LOW trade targets — players whose value is depressed but have positive regression outlook. For each: name, position, why their value is low, why they'll bounce back, and what I should offer. Also flag 2 SELL-HIGH players on my roster if applicable. Be specific and bold.`,
+
+    'waiver': `You are a fantasy football waiver wire analyst. My roster: ${rosterStr}. League: ${leagueSize} teams, ${scoring} scoring, Week ${currentWeek}. ${csvCount} ranking datasets available.
+
+Recommend the top 5 waiver wire pickups for this week. For each: name, position, why they're available, upside, and whether they're worth a #1 waiver claim or can wait. Consider injuries, upcoming matchups, and role changes. Prioritize players NOT on any roster.`,
+
+    'game-theory': `You are a fantasy football game theorist. My roster: ${rosterStr}. League: ${leagueSize} teams, ${scoring} scoring, Week ${currentWeek}. Drafted players: ${draftedStr}.
+
+Analyze: 1) Optimal lineup construction given my roster, 2) Which positions are strength/weakness vs league average, 3) Trade leverage — what I have surplus of, what I need, 4) Playoff schedule strength (Weeks 15-17) for my key players if data allows, 5) Any strategic moves (trade, waiver, IR stash) that maximize expected value. Think like a chess player, not a cheerleader.`,
+
+    'value': `You are a fantasy football value analyst. League: ${leagueSize} teams, ${scoring} scoring. My team: ${rosterStr}. Drafted: ${draftedStr}. I have ${csvCount} ranking/projection datasets.
+
+Compare ADP (average draft position) to current expected value. Identify: 1) Players drafted later than they should have been (league-wide steals), 2) Players on my team who are above or below their draft slot value, 3) Positional scarcity analysis — which positions are thin on the wire, 4) Overall team value rank estimate. Use CSV rankings if available.`,
+
+    'draft-recap': `You are a fantasy football draft grader. My drafted team: ${myTeamStr}. League: ${leagueSize} teams, ${scoring} scoring, ${csvCount} ranking datasets loaded. Draft position: ${settings.draftPosition || 'unknown'}. Picks tracked: ${draftState.picks?.length || 0}.
+
+Grade my draft (A-F). Analyze: 1) Best pick / worst pick / steal of the draft, 2) Positional coverage, 3) Risk profile (injury prone, aging, suspension), 4) Bye week conflicts, 5) How my team compares to a typical championship roster, 6) Three things to watch in the first 4 weeks. Be honest — don't sugarcoat.`,
+
+    'sleepers': `You are a fantasy football deep-dive analyst. League: ${leagueSize} teams, ${scoring} scoring, Week ${currentWeek}. My roster: ${rosterStr}. ${csvCount} ranking datasets loaded.
+
+Identify: 1) 5 SLEEPERS — players being overlooked who have top-24 upside at their position, 2) 3 BUSTS — players being overvalued who could disappoint, 3) 3 DEEP STASHES — players on the wire who could be league-winners if things break right. For each: name, position, the bull/bear case, and a confidence level (1-5). Go beyond the obvious names.`,
+  };
+
+  const prompt = prompts[type] || prompts['trade'];
+
+  // Send via the existing chat infrastructure
+  const messageData = {
+    messages: [...chatHistory, { role: 'user', content: prompt }],
+    csvData: csvDatasets
+  };
+
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: 'OPENAI_REQUEST',
+      data: messageData
+    });
+
+    if (response?.success) {
+      outputEl.textContent = response.data;
+      // Also add to chat history for continuity
+      chatHistory.push({ role: 'user', content: prompt });
+      chatHistory.push({ role: 'assistant', content: response.data });
+      chrome.storage.local.set({ chatHistory }).catch(() => {});
+    } else {
+      outputEl.innerHTML = `<div class="warning">⚠️ ${escapeHtml(response?.error || 'Analysis failed. Check your API key in Settings.')}</div>`;
+    }
+  } catch (e) {
+    outputEl.innerHTML = `<div class="warning">⚠️ Error: ${escapeHtml(e.message)}</div>`;
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {

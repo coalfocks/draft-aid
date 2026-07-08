@@ -18,7 +18,9 @@
     "https://site.api.espn.com/*",
     "https://sports.core.api.espn.com/*",
     "https://generativelanguage.googleapis.com/*",
-    "https://api.groq.com/*"
+    "https://api.groq.com/*",
+    "https://api.anthropic.com/*",
+    "https://apps.fantasyfootballanalytics.net/*"
   ],
   
   "content_scripts": [
