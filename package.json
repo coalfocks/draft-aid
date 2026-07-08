@@ -4,24 +4,25 @@
   "description": "AI-powered fantasy football draft assistant",
   "main": "server.js",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "npm run server",
     "server": "nodemon server.js",
-    "client": "cd client && npm start",
-    "build": "cd client && npm run build",
-    "start": "node server.js"
+    "start": "node server.js",
+    "validate": "node --check server.js && node --check routes/openai.js && node --check routes/draft.js && node --check services/espnService.js && node --check extension/background.js && node --check extension/content.js && node --check extension/popup.js",
+    "test": "npm run validate && node tests/content-extraction.test.js"
   },
   "dependencies": {
-    "axios": "^1.6.2",
+    "axios": "^1.18.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "multer": "^1.4.5-lts.1",
+    "express": "^4.22.2",
+    "multer": "^2.2.0",
     "openai": "^4.20.1",
     "sharp": "^0.32.6",
-    "ws": "^8.18.3"
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
+    "jsdom": "^29.1.1",
     "nodemon": "^3.0.2"
   }
 }

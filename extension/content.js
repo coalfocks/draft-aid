@@ -9,9 +9,81 @@ let draftData = {
   userRoster: []
 };
 
+const POSITION_PATTERN = /\b(QB|RB|WR|TE|K|DEF|DST|D\/ST)\b/;
+const KNOWN_NFL_ABBRS = new Set([
+  'ARI', 'ATL', 'BAL', 'BUF', 'CAR', 'CHI', 'CIN', 'CLE', 'DAL', 'DEN',
+  'DET', 'GB', 'HOU', 'IND', 'JAX', 'KC', 'LV', 'LAC', 'LAR', 'MIA',
+  'MIN', 'NE', 'NO', 'NYG', 'NYJ', 'PHI', 'PIT', 'SEA', 'SF', 'TB',
+  'TEN', 'WAS'
+]);
+
+function normalizeText(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function normalizePosition(position) {
+  const value = normalizeText(position).toUpperCase();
+  if (value === 'D/ST' || value === 'DEF') return 'DST';
+  return value || 'N/A';
+}
+
+function isLikelyPlayerName(name) {
+  const text = normalizeText(name);
+  if (text.length < 2 || text.length > 45) return false;
+  if (/^(add|drop|waiver|news|empty|player|rank|team|position)$/i.test(text)) return false;
+  return /^[A-Za-zÀ-ÖØ-öø-ÿ0-9 .'-]+(?:\s+(?:Jr\.?|Sr\.?|II|III|IV))?$/u.test(text);
+}
+
+function getTextFromFirst(container, selectors) {
+  for (const selector of selectors) {
+    const element = container?.querySelector?.(selector);
+    const text = normalizeText(element?.textContent || element?.getAttribute?.('title'));
+    if (text) return text;
+  }
+  return '';
+}
+
+function extractPositionAndTeam(container) {
+  const positionText = getTextFromFirst(container, [
+    'span.playerinfo__playerpos',
+    'span[class*="playerinfo__playerpos"]',
+    '[data-testid*="position" i]',
+    '[class*="position" i]',
+    '[class*="playerpos" i]'
+  ]);
+
+  const teamText = getTextFromFirst(container, [
+    'span.playerinfo__playerteam',
+    'span[class*="playerinfo__playerteam"]',
+    '[data-testid*="team" i]',
+    '[class*="playerteam" i]'
+  ]);
+
+  const allText = normalizeText(container?.textContent);
+  const positionMatch = positionText.match(POSITION_PATTERN) || allText.match(POSITION_PATTERN);
+  const upperTokens = allText.match(/\b[A-Z]{2,4}\b/g) || [];
+  const teamMatch = teamText || upperTokens.find(token => KNOWN_NFL_ABBRS.has(token));
+
+  return {
+    position: normalizePosition(positionMatch?.[1] || positionText),
+    team: normalizeText(teamMatch) || 'N/A'
+  };
+}
+
+function dedupeTeams(teams) {
+  const seen = new Set();
+  return teams.filter(team => {
+    const key = team.name.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 // Focused observer for the picks list to catch updates instantly
 let picksListObserver = null;
 let observedPicksList = null;
+let draftObserver = null;
 
 // Extract league ID from URL
 function extractLeagueId() {
@@ -25,41 +97,39 @@ function extractLeagueId() {
 
 // Extract team information
 function extractTeams() {
-  // Based on the DOM structure, look for ESPN's team name selectors
   const teamSelectors = [
-    'div.jsx-4106643373.team-name.truncate', // Primary ESPN team name selector
-    '.team-name', 
-    '.jsx-1190755542', // Draft board header team names
     '[data-testid="team-name"]',
+    '[data-testid*="team" i] [class*="name" i]',
+    '.team-name',
     '.owner-name'
   ];
   
-  let teamElements = [];
-  
-  for (const selector of teamSelectors) {
-    teamElements = document.querySelectorAll(selector);
-    console.log(`Trying team selector ${selector}: found ${teamElements.length} elements`);
-    if (teamElements.length > 0) {
-      break;
-    }
-  }
-  
   const teams = [];
-  
-  teamElements.forEach((element, index) => {
-    const teamName = element.textContent.trim();
-    if (teamName && teamName.length > 0) {
-      teams.push({
-        id: index + 1,
-        name: teamName,
-        picks: []
-      });
-    }
+
+  teamSelectors.forEach((selector) => {
+    const teamElements = document.querySelectorAll(selector);
+    console.log(`Trying team selector ${selector}: found ${teamElements.length} elements`);
+
+    teamElements.forEach((element) => {
+      const teamName = normalizeText(element.textContent);
+      if (teamName && teamName.length < 60) {
+        teams.push({
+          id: teams.length + 1,
+          name: teamName,
+          picks: []
+        });
+      }
+    });
   });
+
+  const uniqueTeams = dedupeTeams(teams).map((team, index) => ({
+    ...team,
+    id: index + 1
+  }));
   
-  if (teams.length > 0) {
-    draftData.teams = teams;
-    console.log('👥 Teams extracted:', teams.length, teams.map(t => t.name));
+  if (uniqueTeams.length > 0) {
+    draftData.teams = uniqueTeams;
+    console.log('👥 Teams extracted:', uniqueTeams.length, uniqueTeams.map(t => t.name));
   } else {
     console.log('❌ No teams found');
   }
@@ -311,14 +381,15 @@ function extractFromDraftColumn(draftColumn) {
       if (!wrapper) return;
 
       const nameEl = wrapper.querySelector('span.playerinfo__playername, span[class*="playerinfo__playername"]') ||
-                     wrapper.querySelector('span[class*="playername"]') ||
-                     li.querySelector('span.playerinfo__playername, span[class*="playerinfo__playername"]');
-      const playerName = nameEl?.textContent?.trim();
-      if (!playerName) return;
+                     wrapper.querySelector('span.playerinfo_playername, span[class*="playerinfo_playername"]') ||
+                     wrapper.querySelector('span[class*="playername" i], a.AnchorLink, a[title]') ||
+                     li.querySelector('span.playerinfo__playername, span[class*="playerinfo__playername"], span.playerinfo_playername, span[class*="playerinfo_playername"], a.AnchorLink, a[title]');
+      const playerName = normalizeText(nameEl?.textContent || nameEl?.getAttribute?.('title'));
+      if (!isLikelyPlayerName(playerName)) return;
 
       const pickInfoElement = wrapper.querySelector('div.pick-info, [class*="pick-info"]') ||
                               li.querySelector('div.pick-info, [class*="pick-info"]');
-      const pickInfoText = pickInfoElement?.textContent?.trim() || '';
+      const pickInfoText = normalizeText(pickInfoElement?.textContent);
 
       let round = 'N/A';
       let pickInRound = 'N/A';
@@ -334,20 +405,16 @@ function extractFromDraftColumn(draftColumn) {
       let draftingTeam = 'Unknown Team';
       const draftingSpan = pickInfoElement?.querySelector('span');
       if (draftingSpan) {
-        draftingTeam = draftingSpan.textContent.replace(/^\s*-\s*/, '').trim() || draftingTeam;
+        draftingTeam = normalizeText(draftingSpan.textContent.replace(/^\s*-\s*/, '')) || draftingTeam;
       }
 
-      // Use explicit spans for NFL team and position if present
-      const nflTeamEl = wrapper.querySelector('span.playerinfo__playerteam, span[class*="playerinfo__playerteam"]');
-      const posEl = wrapper.querySelector('span.playerinfo__playerpos, span[class*="playerinfo__playerpos"]');
-      const teamMatch = nflTeamEl?.textContent?.trim() || 'N/A';
-      const position = posEl?.textContent?.trim() || 'N/A';
+      const { position, team } = extractPositionAndTeam(wrapper);
 
       picks.push({
         pickNumber: overallPick,
         round,
         pickInRound,
-        player: { name: playerName, position, team: teamMatch },
+        player: { name: playerName, position, team },
         draftingTeam,
         timestamp: new Date().toISOString()
       });
@@ -359,12 +426,12 @@ function extractFromDraftColumn(draftColumn) {
   if (picks.length === 0) {
     console.log('❌ No picks extracted using strict structure, falling back');
     // Fallback to previous span-based approach
-    const nameSpans = draftColumn.querySelectorAll('span.playerinfo_playername, .playerinfo_playername');
+    const nameSpans = draftColumn.querySelectorAll('span.playerinfo_playername, .playerinfo_playername, span[class*="playername" i], a.AnchorLink, a[title]');
     nameSpans.forEach((nameEl, i) => {
       try {
         const container = nameEl.closest('li') || nameEl.closest('div');
         const pickInfoElement = container?.querySelector('.pick-info');
-        const pickInfoText = pickInfoElement?.textContent?.trim() || '';
+        const pickInfoText = normalizeText(pickInfoElement?.textContent);
         let round = 'N/A';
         let pickInRound = 'N/A';
         const overallPick = i + 1;
@@ -377,15 +444,14 @@ function extractFromDraftColumn(draftColumn) {
         if (pickInfoElement?.parentElement?.nextElementSibling?.tagName === 'SPAN') {
           draftingTeam = pickInfoElement.parentElement.nextElementSibling.textContent.trim() || draftingTeam;
         }
-        const text = container?.textContent || '';
-        const posMatch = text.match(/\b(QB|RB|WR|TE|K|DEF|DST|D\/ST)\b/);
-        const position = posMatch ? (posMatch[1] === 'D/ST' ? 'DST' : posMatch[1]) : 'N/A';
-        const teamMatch = (text.match(/\b[A-Z]{2,4}\b/g) || []).find(t => !['QB','RB','WR','TE','DEF','DST','K'].includes(t) && t.length <= 4) || 'N/A';
+        const playerName = normalizeText(nameEl.textContent || nameEl.getAttribute?.('title'));
+        if (!isLikelyPlayerName(playerName)) return;
+        const { position, team } = extractPositionAndTeam(container);
         picks.push({
           pickNumber: overallPick,
           round,
           pickInRound,
-          player: { name: nameEl.textContent.trim(), position, team: teamMatch },
+          player: { name: playerName, position, team },
           draftingTeam,
           timestamp: new Date().toISOString()
         });
@@ -504,34 +570,11 @@ function extractCompletedDraftPicks() {
 
 // Extract detailed pick information
 function extractPickDetails(playerLink, pickNumber) {
-  const playerName = playerLink.textContent?.trim() || playerLink.title?.trim();
-  if (!playerName) return null;
+  const playerName = normalizeText(playerLink.textContent || playerLink.title);
+  if (!isLikelyPlayerName(playerName)) return null;
   
-  let position = 'N/A';
-  let team = 'N/A';
-  
-  // Look in parent row/container for position and team
   const parentRow = playerLink.closest('tr') || playerLink.closest('div');
-  
-  if (parentRow) {
-    const rowText = parentRow.textContent;
-    
-    // Extract position
-    const positionMatch = rowText.match(/\b(QB|RB|WR|TE|K|DEF|DST|D\/ST)\b/);
-    if (positionMatch) {
-      position = positionMatch[1] === 'D/ST' ? 'DST' : positionMatch[1];
-    }
-    
-    // Extract NFL team (3-4 letter abbreviations, but not positions)
-    const teamMatches = rowText.match(/\b[A-Z]{2,4}\b/g);
-    if (teamMatches) {
-      const nflTeam = teamMatches.find(match => 
-        !['QB', 'RB', 'WR', 'TE', 'DST', 'DEF'].includes(match) &&
-        match.length <= 4
-      );
-      if (nflTeam) team = nflTeam;
-    }
-  }
+  const { position, team } = extractPositionAndTeam(parentRow || playerLink);
   
   return {
     pickNumber: pickNumber,
@@ -755,7 +798,7 @@ function startContinuousMonitoring() {
     }
     
     // Also check if draft column appeared (for dynamic loading)
-    const draftColumn = document.querySelector('.draft-column.flex');
+    const draftColumn = document.querySelector('.draft-column.flex, .draft-column, [class*="draft-column"]');
     if (draftColumn && draftData.picks.length === 0) {
       console.log('🎯 Draft column appeared, extracting data...');
       extractDraftPicks();
@@ -802,6 +845,11 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // Enhanced DOM observer for draft-specific changes
+function nodeHasClassFragment(node, fragment) {
+  if (!node?.classList) return false;
+  return Array.from(node.classList).some(className => className.includes(fragment));
+}
+
 function createDraftObserver() {
   return new MutationObserver((mutations) => {
     let shouldRecheckDraft = false;
@@ -813,16 +861,20 @@ function createDraftObserver() {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             // Check for draft elements
-            if (node.classList?.contains('draft-column') || 
+            if (node.classList?.contains('draft-column') ||
+                nodeHasClassFragment(node, 'draft-column') ||
                 node.querySelector?.('.draft-column') ||
-                node.classList?.contains('pa3') ||
+                node.querySelector?.('[class*="draft-column"]') ||
+                nodeHasClassFragment(node, 'pa3') ||
                 node.querySelector?.('.pa3')) {
               shouldRecheckDraft = true;
             }
             
             // Check for roster elements
             if (node.classList?.contains('roster-module') ||
+                nodeHasClassFragment(node, 'roster') ||
                 node.querySelector?.('.roster-module') ||
+                node.querySelector?.('[class*="roster"]') ||
                 node.querySelector?.('table')) {
               shouldRecheckRoster = true;
             }
@@ -846,7 +898,10 @@ function createDraftObserver() {
 // Start enhanced draft observing when page loads
 function startDraftObserving() {
   if (document.body) {
-    const draftObserver = createDraftObserver();
+    if (draftObserver) {
+      draftObserver.disconnect();
+    }
+    draftObserver = createDraftObserver();
     draftObserver.observe(document.body, {
       childList: true,
       subtree: true,
@@ -859,3 +914,14 @@ function startDraftObserving() {
 // Debug: Log page structure for development
 console.log('📋 Fantasy Draft Assistant content script loaded');
 console.log('📋 Page URL:', window.location.href);
+
+if (typeof window !== 'undefined') {
+  window.__draftAidExtract = {
+    extractDraftPicks,
+    extractFromDraftColumn,
+    extractPickDetails,
+    extractTeams,
+    extractUserRoster,
+    getDraftData: () => draftData
+  };
+}

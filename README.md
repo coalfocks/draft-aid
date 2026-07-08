@@ -1,108 +1,78 @@
-# Fantasy Draft Assistant 🏈
+# Fantasy Draft Assistant
 
-An AI-powered fantasy football draft assistant that helps you make optimal draft decisions during your fantasy football draft.
+Chrome extension for live ESPN fantasy football draft help. It watches the ESPN draft page, tracks recent picks and your roster, lets you add keepers/watch-list players, and gives AI draft advice using the latest context you load into the popup.
 
-## Features
+## What It Does
 
-- **OpenAI-Powered Chat Assistant**: Get real-time draft advice and strategy recommendations
-- **Draft Configuration**: Set up your league settings, draft position, and roster requirements
-- **Draft Tracking**: Record picks and track your team composition
-- **Watch List Management**: Keep track of players you're targeting
-- **Screenshot Analysis**: Upload draft board screenshots for AI analysis using GPT-4 Vision
-- **Real-time Draft Updates**: Track current pick and draft status
+- Extracts live picks from ESPN fantasy draft pages
+- Tracks your roster, keepers, watch list, current pick, and picks until your next turn
+- Supports uploaded ranking screenshots and CSV rankings
+- Uses OpenAI/Gemini/Groq API keys saved locally in Chrome extension storage
+- Includes debug tools for ESPN DOM inspection when the draft page changes
 
-## Prerequisites
+## Install For Draft Night
 
-- Node.js (v14 or higher)
-- OpenAI API key
-
-## Setup
-
-1. **Clone and install dependencies**:
+1. Install dependencies for local validation:
    ```bash
    npm install
-   cd client && npm install && cd ..
    ```
 
-2. **Set up environment variables**:
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` and add your OpenAI API key:
-   ```
-   OPENAI_API_KEY=your_openai_api_key_here
-   PORT=3001
-   ```
+2. Load the extension in Chrome:
+   - Go to `chrome://extensions`
+   - Enable Developer mode
+   - Click Load unpacked
+   - Select the `extension/` folder in this repo
 
-3. **Start the application**:
-   ```bash
-   npm run dev
+3. Open your ESPN draft room:
+   ```text
+   https://fantasy.espn.com/football/
    ```
 
-   This will start both the backend server (port 3001) and frontend client (port 3000).
+4. Open the extension popup and configure:
+   - API key for the model you want to use
+   - Your team name
+   - Draft position
+   - Keeper players, if any
+   - Optional CSV rankings or screenshots
 
-4. **Open your browser** to `http://localhost:3000`
+## Draft-Night Checklist
 
-## Usage
+- Open ESPN draft room at least 15 minutes early
+- Click Refresh in the popup and confirm picks/teams are detected
+- If detection looks wrong, go to Settings and click Debug DOM, then Force Extract
+- Upload your ranking CSV before the draft starts
+- Keep the popup open on the AI Chat tab only when asking questions; ESPN extraction continues from the content script
 
-### Initial Setup
-1. Configure your draft settings:
-   - Your draft position (1-16)
-   - Total number of teams
-   - Scoring system (Standard, PPR, Half PPR)
-   - Roster requirements (QB, RB, WR, etc.)
+## Local Development
 
-### During the Draft
-1. **Chat with AI**: Ask questions about draft strategy, player recommendations, bye weeks, etc.
-2. **Record Picks**: Manually track who gets drafted by which team
-3. **Manage Watch List**: Add/remove players you're targeting
-4. **Upload Screenshots**: Take screenshots of your draft board and get AI analysis
+```bash
+npm run validate
+npm test
+npm run dev
+```
 
-### Chat Examples
-- "Who should I draft next?"
-- "What positions should I prioritize?"
-- "Tell me about bye week conflicts on my team"
-- "Who are the best sleepers available?"
+`npm run dev` starts the optional Express helper API on `PORT` from `.env` or `3031`. The main experience is the Chrome extension; there is no React client in this repo.
 
 ## Project Structure
 
-```
+```text
 draft-aid/
-├── server.js              # Express server
+├── extension/
+│   ├── manifest.json
+│   ├── content.js
+│   ├── background.js
+│   ├── popup.html
+│   ├── popup.css
+│   └── popup.js
 ├── routes/
-│   ├── openai.js         # OpenAI API routes
-│   └── draft.js          # Draft state management
-├── client/               # React frontend
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   └── App.js       # Main app component
-│   └── build/           # Production build
-└── uploads/             # Screenshot uploads
+├── services/
+├── tests/
+├── server.js
+└── package.json
 ```
 
-## API Endpoints
+## Notes
 
-- `POST /api/openai/chat` - Chat with AI assistant
-- `POST /api/openai/analyze-screenshot` - Analyze draft board screenshots
-- `GET /api/draft/state` - Get current draft state
-- `POST /api/draft/configure` - Configure draft settings
-- `POST /api/draft/player-drafted` - Record a drafted player
-- `POST /api/draft/watchlist` - Manage watch list
-- `POST /api/upload-screenshot` - Upload screenshot files
-
-## Future Enhancements
-
-- ESPN API integration for automatic draft tracking
-- Player rankings and projections data
-- Advanced analytics and team optimization
-- Mobile app version
-- League synchronization features
-
-## Contributing
-
-Feel free to submit issues and pull requests to improve the fantasy draft assistant!
-
-## License
-
-MIT License
+- Private ESPN leagues still require you to be logged into ESPN in Chrome.
+- ESPN changes its DOM often. The extractor intentionally uses multiple selectors and the Debug DOM tools are there for draft-day repair.
+- Uploaded API keys stay in local Chrome extension storage.

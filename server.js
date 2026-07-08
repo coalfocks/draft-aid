@@ -10,7 +10,8 @@ const PORT = process.env.PORT || 3031;
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use(express.static(path.join(__dirname, 'client/build')));
+const clientBuildPath = path.join(__dirname, 'client/build');
+app.use(express.static(clientBuildPath));
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -32,8 +33,19 @@ app.post('/api/upload-screenshot', upload.single('screenshot'), (req, res) => {
   });
 });
 
+app.get('/health', (req, res) => {
+  res.json({ ok: true, service: 'draft-aid', timestamp: new Date().toISOString() });
+});
+
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
+  const indexPath = path.join(clientBuildPath, 'index.html');
+  res.sendFile(indexPath, (error) => {
+    if (error) {
+      res.status(404).json({
+        error: 'No web client is bundled in this repo. Load the Chrome extension from the extension/ folder.'
+      });
+    }
+  });
 });
 
 app.listen(PORT, () => {

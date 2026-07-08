@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fantasy Draft Assistant",
-  "version": "1.0",
+  "version": "1.1",
   "description": "AI-powered fantasy football draft assistant with ESPN integration",
   
   "permissions": [

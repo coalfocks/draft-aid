@@ -3,9 +3,27 @@ const OpenAI = require('openai');
 const axios = require('axios');
 const router = express.Router();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openaiClient = null;
+
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not configured');
+  }
+
+  if (!openaiClient) {
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+
+  return openaiClient;
+}
+
+function getFantasySeasonYear(date = new Date()) {
+  // Fantasy draft prep in Jan/Feb usually targets the previous NFL season.
+  const month = date.getMonth();
+  return month < 2 ? date.getFullYear() - 1 : date.getFullYear();
+}
 
 // Function to get player injury status from ESPN
 async function getPlayerInjuryStatus(playerName) {
@@ -79,10 +97,11 @@ async function getPlayerInjuryStatus(playerName) {
 // Function to get current NFL context (teams, recent trades, current season info)
 async function getCurrentNFLContext() {
   try {
+    const seasonYear = getFantasySeasonYear();
     // Get current NFL teams and recent news
     const response = await axios.get('https://site.web.api.espn.com/apis/search/v2', {
       params: {
-        query: '2024 NFL trades roster moves',
+        query: `${seasonYear} NFL trades roster moves fantasy football`,
         limit: 20,
         type: 'article'
       },
@@ -101,7 +120,7 @@ async function getCurrentNFLContext() {
     }).slice(0, 10);
     
     return {
-      currentSeason: '2024 NFL Season',
+      currentSeason: `${seasonYear} NFL Season`,
       recentMoves: recentMoves.map(article => ({
         headline: article.displayName,
         url: article.link?.web
@@ -109,8 +128,9 @@ async function getCurrentNFLContext() {
       lastUpdated: new Date().toISOString()
     };
   } catch (error) {
+    const seasonYear = getFantasySeasonYear();
     return {
-      currentSeason: '2024 NFL Season',
+      currentSeason: `${seasonYear} NFL Season`,
       error: `Failed to fetch current NFL context: ${error.message}`,
       recentMoves: []
     };
@@ -163,11 +183,12 @@ async function searchFantasyNews(query) {
 
 router.post('/chat', async (req, res) => {
   try {
+    const openai = getOpenAIClient();
     const { message, context, model: requestedModel, provider } = req.body;
     
     let systemPrompt = `You are a fantasy football draft assistant. You help users make optimal draft decisions during their fantasy football draft.
 
-IMPORTANT: Your knowledge cutoff is over a year old (early 2024), so you may not know about recent trades, signings, injuries, or current NFL roster changes. Always use the available tools to get current information when discussing players or making recommendations.
+IMPORTANT: Your stored football knowledge may be stale for the current fantasy season. Always use the available tools to get current information when discussing players or making recommendations.
 
 ACCURACY REQUIREMENTS:
 1. ALWAYS fact-check player team assignments using tools before making recommendations
@@ -562,6 +583,7 @@ Respond in the following format:
 
 router.post('/analyze-screenshot', async (req, res) => {
   try {
+    const openai = getOpenAIClient();
     const { imageBase64, question, position, isRankingChart, conversationContext, context } = req.body;
     
     let prompt;

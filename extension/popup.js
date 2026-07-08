@@ -299,55 +299,93 @@ function requestDraftData() {
     if (tabs[0] && tabs[0].url.includes('fantasy.espn.com')) {
       chrome.tabs.sendMessage(tabs[0].id, { type: 'GET_DRAFT_DATA' }, (response) => {
         if (response) {
-          // Auto-reset chat if league changed
-          if (response.leagueId && lastLeagueId && response.leagueId !== lastLeagueId) {
-            resetChatToBaseline();
-          }
-          
-          // Preserve keepers when updating draft state
-          const currentKeepers = draftState.keepers || [];
-          draftState = { ...draftState, ...response };
-          
-          // Restore keepers if they were cleared
-          if (currentKeepers.length > 0 && (!draftState.keepers || draftState.keepers.length === 0)) {
-            draftState.keepers = currentKeepers;
-            
-            // Re-add keepers to picks if they're missing
-            currentKeepers.forEach(keeperName => {
-              const alreadyInPicks = draftState.picks.some(pick => 
-                pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
-              );
-              
-              if (!alreadyInPicks) {
-                draftState.picks.unshift({
-                  pickNumber: 0,
-                  player: {
-                    name: keeperName,
-                    position: 'KEEPER',
-                    team: 'KEEPER'
-                  },
-                  draftingTeam: 'Keeper'
-                });
-              }
-            });
-          }
-          
-          if (response.leagueId && response.leagueId !== lastLeagueId) {
-            lastLeagueId = response.leagueId;
-            chrome.storage.local.set({ lastLeagueId });
-          }
-          // Auto-reset if new draft started (pick count reset)
-          if (Array.isArray(response.picks)) {
-            if (typeof lastPickCount === 'number' && lastPickCount > 0 && response.picks.length === 0) {
-              resetChatToBaseline();
-            }
-            lastPickCount = response.picks.length;
-            chrome.storage.local.set({ lastPickCount });
-          }
-          updateUI();
+          applyDraftResponse(response);
         }
       });
     }
+  });
+}
+
+function addKeepersToPicks() {
+  if (!draftState.keepers || draftState.keepers.length === 0) return;
+
+  draftState.keepers.forEach(keeperName => {
+    const alreadyInPicks = draftState.picks.some(pick =>
+      pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
+    );
+
+    if (!alreadyInPicks) {
+      draftState.picks.unshift({
+        pickNumber: 0,
+        player: {
+          name: keeperName,
+          position: 'KEEPER',
+          team: 'KEEPER'
+        },
+        draftingTeam: 'Keeper'
+      });
+    }
+  });
+}
+
+function applyDraftResponse(response) {
+  if (!response) return;
+
+  if (response.leagueId && lastLeagueId && response.leagueId !== lastLeagueId) {
+    resetChatToBaseline();
+  }
+
+  const currentKeepers = draftState.keepers || [];
+  draftState = { ...draftState, ...response };
+
+  if (currentKeepers.length > 0 && (!draftState.keepers || draftState.keepers.length === 0)) {
+    draftState.keepers = currentKeepers;
+  }
+
+  addKeepersToPicks();
+
+  if (response.leagueId && response.leagueId !== lastLeagueId) {
+    lastLeagueId = response.leagueId;
+    chrome.storage.local.set({ lastLeagueId });
+  }
+
+  if (Array.isArray(response.picks)) {
+    if (typeof lastPickCount === 'number' && lastPickCount > 0 && response.picks.length === 0) {
+      resetChatToBaseline();
+    }
+    lastPickCount = response.picks.length;
+    chrome.storage.local.set({ lastPickCount });
+  }
+
+  updateUI();
+}
+
+function sendMessageToEspnTab(tab, message, onSuccess, onFailure) {
+  chrome.tabs.sendMessage(tab.id, message, (response) => {
+    if (!chrome.runtime.lastError && response) {
+      onSuccess(response);
+      return;
+    }
+
+    chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content.js']
+    }, () => {
+      if (chrome.runtime.lastError) {
+        onFailure?.(chrome.runtime.lastError.message);
+        return;
+      }
+
+      setTimeout(() => {
+        chrome.tabs.sendMessage(tab.id, message, (retryResponse) => {
+          if (chrome.runtime.lastError || !retryResponse) {
+            onFailure?.(chrome.runtime.lastError?.message || 'No response from content script');
+            return;
+          }
+          onSuccess(retryResponse);
+        });
+      }, 500);
+    });
   });
 }
 
@@ -370,59 +408,22 @@ function refreshAndSync() {
       return;
     }
     
-    // First ensure content script is loaded
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content.js']
-    }, () => {
-      // Small delay to let content script initialize
-      setTimeout(() => {
-        chrome.tabs.sendMessage(tab.id, { type: 'FORCE_EXTRACT' }, (response) => {
-          if (chrome.runtime.lastError) {
-            console.error('Refresh error:', chrome.runtime.lastError);
-            addDebugLog('Failed to refresh: ' + chrome.runtime.lastError.message);
-          } else if (response) {
-            // Preserve keepers
-            const currentKeepers = draftState.keepers || [];
-            
-            // Update state with fresh data
-            draftState = { ...draftState, ...response };
-            
-            // Restore keepers
-            if (currentKeepers.length > 0) {
-              draftState.keepers = currentKeepers;
-              
-              // Re-add keepers to picks
-              currentKeepers.forEach(keeperName => {
-                const alreadyInPicks = draftState.picks.some(pick => 
-                  pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
-                );
-                
-                if (!alreadyInPicks) {
-                  draftState.picks.unshift({
-                    pickNumber: 0,
-                    player: {
-                      name: keeperName,
-                      position: 'KEEPER',
-                      team: 'KEEPER'
-                    },
-                    draftingTeam: 'Keeper'
-                  });
-                }
-              });
-            }
-            
-            updateUI();
-            addDebugLog(`Refreshed: ${response.picks?.length || 0} picks found (+ ${currentKeepers.length} keepers)`);
-          }
-          
-          // Reset button
-          if (elements.refreshPicksBtn) {
-            elements.refreshPicksBtn.disabled = false;
-            elements.refreshPicksBtn.textContent = 'Refresh Picks';
-          }
-        });
-      }, 500);
+    sendMessageToEspnTab(tab, { type: 'FORCE_EXTRACT' }, (response) => {
+      const currentKeepers = draftState.keepers || [];
+      applyDraftResponse(response);
+      addDebugLog(`Refreshed: ${response.picks?.length || 0} picks found (+ ${currentKeepers.length} keepers)`);
+
+      if (elements.refreshPicksBtn) {
+        elements.refreshPicksBtn.disabled = false;
+        elements.refreshPicksBtn.textContent = 'Refresh Picks';
+      }
+    }, (errorMessage) => {
+      console.error('Refresh error:', errorMessage);
+      addDebugLog('Failed to refresh: ' + errorMessage);
+      if (elements.refreshPicksBtn) {
+        elements.refreshPicksBtn.disabled = false;
+        elements.refreshPicksBtn.textContent = 'Refresh Picks';
+      }
     });
   });
 }
@@ -488,6 +489,11 @@ function setupEventListeners() {
   
   // Image gallery actions
   elements.clearImagesBtn?.addEventListener('click', clearAllImages);
+  elements.recentPicks?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-add-player]');
+    if (!button) return;
+    addPlayerToMyTeam(button.dataset.playerName, button.dataset.playerPosition);
+  });
   
   // Listen for messages from background script
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -791,6 +797,19 @@ function clearAllCSVs() {
   addDebugLog('Cleared all CSV datasets');
 }
 
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeAttr(value) {
+  return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
 // Update recent picks display
 function updateRecentPicks() {
   if (!elements.recentPicks) return;
@@ -804,12 +823,12 @@ function updateRecentPicks() {
   
   elements.recentPicks.innerHTML = recentPicks.map(pick => `
     <div class="pick-item">
-      <span class="pick-number">#${pick.pickNumber}</span>
+      <span class="pick-number">#${escapeHtml(pick.pickNumber)}</span>
       <div class="player-info">
-        <div class="player-name">${pick.player.name}</div>
-        <div class="player-details">${pick.player.position} - ${pick.player.team}</div>
+        <div class="player-name">${escapeHtml(pick.player.name)}</div>
+        <div class="player-details">${escapeHtml(pick.player.position)} - ${escapeHtml(pick.player.team)}</div>
       </div>
-      <button class="btn btn-small" onclick="addPlayerToMyTeam('${pick.player.name}', '${pick.player.position}')">
+      <button class="btn btn-small" data-add-player data-player-name="${escapeAttr(pick.player.name)}" data-player-position="${escapeAttr(pick.player.position)}">
         + My Team
       </button>
     </div>
@@ -830,8 +849,8 @@ function updateMyTeam() {
   elements.myTeam.innerHTML = draftState.myTeam.map(player => `
     <div class="player-card">
       <div>
-        <span class="player-name">${player.name}</span>
-        <span class="player-position">${player.position}</span>
+        <span class="player-name">${escapeHtml(player.name)}</span>
+        <span class="player-position">${escapeHtml(player.position)}</span>
       </div>
     </div>
   `).join('');
@@ -851,8 +870,8 @@ function updateWatchlist() {
   elements.watchlist.innerHTML = draftState.watchList.map((player, index) => `
     <div class="player-card">
       <div>
-        <span class="player-name">${player.name}</span>
-        <span class="player-position">${player.position}</span>
+        <span class="player-name">${escapeHtml(player.name)}</span>
+        <span class="player-position">${escapeHtml(player.position)}</span>
       </div>
       <button class="btn btn-small" onclick="removeFromWatchlist(${index})">Remove</button>
     </div>
@@ -876,7 +895,7 @@ function updateKeepers() {
     return `
       <div class="player-card">
         <div>
-          <span class="player-name">${keeperName}</span>
+          <span class="player-name">${escapeHtml(keeperName)}</span>
           <span class="player-position" style="color: #dc3545;">KEEPER</span>
         </div>
         <button class="btn btn-small keeper-remove-btn" data-index="${index}">Remove</button>
@@ -940,51 +959,27 @@ function debugDom() {
       return;
     }
     
-    // First, inject the content script to ensure it's loaded
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content.js']
-    }, (results) => {
-      if (chrome.runtime.lastError) {
-        addDebugLog(`Script injection error: ${chrome.runtime.lastError.message}`);
-        return;
-      }
-      
-      addDebugLog('Content script injected, testing communication...');
-      
-      // Test basic communication first
-      chrome.tabs.sendMessage(tab.id, { type: 'DEBUG_DOM' }, (response) => {
-        if (chrome.runtime.lastError) {
-          addDebugLog(`Message error: ${chrome.runtime.lastError.message}`);
-          // Try alternative approach - inject inspector directly
-          tryDirectInspection(tab.id);
-          return;
-        }
-        
-        if (response) {
-          addDebugLog(`✅ Communication working!`);
-          addDebugLog(`Elements found: ${response.elementCount}`);
-          addDebugLog(`Title: ${response.pageTitle}`);
-          console.log('🔍 DOM Debug Response:', response);
-          
-          // Now try the DOM inspector
-          chrome.scripting.executeScript({
-            target: { tabId: tab.id },
-            files: ['dom-inspector.js']
-          }, () => {
-            chrome.tabs.sendMessage(tab.id, { type: 'RUN_DOM_INSPECTOR' }, (inspectorResponse) => {
-              if (inspectorResponse) {
-                addDebugLog('DOM inspector completed - check console');
-              } else {
-                addDebugLog('DOM inspector no response');
-              }
-            });
-          });
-        } else {
-          addDebugLog('No response from content script');
-          tryDirectInspection(tab.id);
-        }
+    sendMessageToEspnTab(tab, { type: 'DEBUG_DOM' }, (response) => {
+      addDebugLog(`✅ Communication working!`);
+      addDebugLog(`Elements found: ${response.elementCount}`);
+      addDebugLog(`Title: ${response.pageTitle}`);
+      console.log('🔍 DOM Debug Response:', response);
+
+      chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['dom-inspector.js']
+      }, () => {
+        chrome.tabs.sendMessage(tab.id, { type: 'RUN_DOM_INSPECTOR' }, (inspectorResponse) => {
+          if (inspectorResponse) {
+            addDebugLog('DOM inspector completed - check console');
+          } else {
+            addDebugLog('DOM inspector no response');
+          }
+        });
       });
+    }, (errorMessage) => {
+      addDebugLog(`Message error: ${errorMessage}`);
+      tryDirectInspection(tab.id);
     });
   });
 }
@@ -1041,64 +1036,13 @@ function forceExtract() {
       return;
     }
     
-    // Ensure content script is loaded first
-    chrome.scripting.executeScript({
-      target: { tabId: tab.id },
-      files: ['content.js']
-    }, (results) => {
-      if (chrome.runtime.lastError) {
-        addDebugLog(`Script injection error: ${chrome.runtime.lastError.message}`);
-        return;
-      }
-      
-      // Give it a moment to initialize
-      setTimeout(() => {
-        chrome.tabs.sendMessage(tab.id, { type: 'FORCE_EXTRACT' }, (response) => {
-          if (chrome.runtime.lastError) {
-            addDebugLog(`Message error: ${chrome.runtime.lastError.message}`);
-            // Try direct extraction
-            tryDirectExtraction(tab.id);
-            return;
-          }
-          
-          if (response) {
-            // Preserve keepers before updating
-            const currentKeepers = draftState.keepers || [];
-            
-            draftState = { ...draftState, ...response };
-            
-            // Restore keepers and add to picks
-            if (currentKeepers.length > 0) {
-              draftState.keepers = currentKeepers;
-              
-              // Re-add keepers to picks
-              currentKeepers.forEach(keeperName => {
-                const alreadyInPicks = draftState.picks.some(pick => 
-                  pick.player?.name === keeperName && pick.player?.position === 'KEEPER'
-                );
-                
-                if (!alreadyInPicks) {
-                  draftState.picks.unshift({
-                    pickNumber: 0,
-                    player: {
-                      name: keeperName,
-                      position: 'KEEPER',
-                      team: 'KEEPER'
-                    },
-                    draftingTeam: 'Keeper'
-                  });
-                }
-              });
-            }
-            
-            updateUI();
-            addDebugLog(`✅ Extracted ${response.picks?.length || 0} picks, ${response.userRoster?.length || 0} roster players (+ ${currentKeepers.length} keepers)`);
-          } else {
-            addDebugLog('❌ Force extraction failed - no response');
-            tryDirectExtraction(tab.id);
-          }
-        });
-      }, 1000);
+    sendMessageToEspnTab(tab, { type: 'FORCE_EXTRACT' }, (response) => {
+      const currentKeepers = draftState.keepers || [];
+      applyDraftResponse(response);
+      addDebugLog(`✅ Extracted ${response.picks?.length || 0} picks, ${response.userRoster?.length || 0} roster players (+ ${currentKeepers.length} keepers)`);
+    }, (errorMessage) => {
+      addDebugLog(`Message error: ${errorMessage}`);
+      tryDirectExtraction(tab.id);
     });
   });
 }
@@ -2200,12 +2144,12 @@ function updateImageGallery() {
   }
   
   elements.imageGallery.innerHTML = uploadedImages.map((image, index) => `
-    <div class="image-thumbnail" data-image-id="${image.id}">
-      <img src="${image.data}" alt="${image.name}" onclick="showImageModal('${image.id}')">
+    <div class="image-thumbnail" data-image-id="${escapeAttr(image.id)}">
+      <img src="${image.data}" alt="${escapeAttr(image.name)}" onclick="showImageModal('${escapeAttr(image.id)}')">
       <div class="image-info">
         ${new Date(image.timestamp).toLocaleDateString()}
       </div>
-      <button class="delete-btn" onclick="deleteImage('${image.id}')" title="Delete image">×</button>
+      <button class="delete-btn" onclick="deleteImage('${escapeAttr(image.id)}')" title="Delete image">×</button>
     </div>
   `).join('');
 }
@@ -2221,7 +2165,7 @@ function showImageModal(imageId) {
   const modal = document.createElement('div');
   modal.className = 'image-modal';
   modal.innerHTML = `
-    <img src="${image.data}" alt="${image.name}" style="max-width: 95vw; max-height: 95vh; object-fit: contain;">
+    <img src="${image.data}" alt="${escapeAttr(image.name)}" style="max-width: 95vw; max-height: 95vh; object-fit: contain;">
     <button class="close-btn" onclick="closeImageModal()">×</button>
   `;
   
@@ -2283,7 +2227,6 @@ function clearAllImages() {
 }
 
 // Make functions global for onclick handlers
-window.addPlayerToMyTeam = addPlayerToMyTeam;
 window.removeFromWatchlist = removeFromWatchlist;
 window.showImageModal = showImageModal;
 window.closeImageModal = closeImageModal;
