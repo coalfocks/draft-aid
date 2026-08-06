@@ -333,7 +333,7 @@ async function getAllDraftData() {
 async function handleOpenAIRequest(requestData, sendResponse, messageId) {
   try {
     // Get keys from storage
-    const result = await chrome.storage.local.get(['openaiApiKey', 'googleApiKey', 'groqApiKey', 'settings', 'pendingChatMessage']);
+    const result = await chrome.storage.local.get(['openaiApiKey', 'googleApiKey', 'groqApiKey', 'anthropicApiKey', 'settings', 'pendingChatMessage']);
     
     // Get CSV data from request or context
     const csvDatasets = requestData.csvData ? Object.values(requestData.csvData) : 
@@ -345,10 +345,12 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
     // Simple, explicit routing:
     // - If model starts with 'groq-', route to Groq and strip the prefix before sending
     // - Else if starts with 'gemini-', route to Gemini
+    // - Else if includes 'claude', route to Anthropic via OpenAI-compat endpoint
     // - Else route to OpenAI
     const isGroq = chatModel.startsWith('groq-');
     const isGemini = chatModel.startsWith('gemini-');
-    const provider = isGroq ? 'groq' : (isGemini ? 'gemini' : 'openai');
+    const isClaude = chatModel.includes('claude');
+    const provider = isGroq ? 'groq' : (isGemini ? 'gemini' : (isClaude ? 'anthropic' : 'openai'));
     const modelForApi = isGroq ? chatModel.replace(/^groq-/, '') : chatModel;
 
     let apiUrl = 'https://api.openai.com/v1/chat/completions';
@@ -374,6 +376,22 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
         return;
       }
       headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${googleKey}` };
+    }
+
+    if (provider === 'anthropic') {
+      // Anthropic native Messages API - different format from OpenAI
+      apiUrl = 'https://api.anthropic.com/v1/messages';
+      const anthropicKey = result.anthropicApiKey || result.settings?.anthropicApiKey;
+      if (!anthropicKey) {
+        console.error('Claude selected but API key missing. Model:', chatModel);
+        sendResponse({ success: false, error: 'Anthropic API key not configured. Add it in Settings.', model: chatModel, provider: 'anthropic' });
+        return;
+      }
+      headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicKey,
+        'anthropic-version': '2023-06-01'
+      };
     }
 
     console.log('🔧 LLM routing:', { provider, apiUrl, modelConfigured: chatModel, modelSent: modelForApi });
@@ -481,21 +499,132 @@ ADP = average draft position (ie 5.06 means 5th round, 6th pick).`;
 
     // Determine if it's a GPT-5 model
     const isGPT5Model = modelForApi.includes('gpt-5') || modelForApi.includes('gpt5');
-    
-    // Build request parameters
-    const requestParams = {
+    const isClaudeModel = modelForApi.includes('claude');
+    // Models that use max_completion_tokens instead of max_tokens
+    const usesCompletionTokens = isGPT5Model || isClaudeModel;
+
+    // Anthropic uses a different request format
+    if (provider === 'anthropic') {
+      // Extract system messages into top-level system param
+      const systemMessages = messages.filter(m => m.role === 'system');
+      const chatMessages = messages.filter(m => m.role !== 'system');
+      const systemText = systemMessages.map(m => m.content).join('\n\n');
+
+      // Convert tools to Anthropic format
+      const anthropicTools = tools.map(t => ({
+        name: t.function.name,
+        description: t.function.description,
+        input_schema: t.function.parameters
+      }));
+
+      const anthropicRequest = {
+        model: modelForApi,
+        system: systemText,
+        messages: chatMessages,
+        max_tokens: 8000,
+        temperature: 0.3,
+        tools: anthropicTools
+      };
+
+      let anthropicResponse = await fetch(apiUrl, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(anthropicRequest)
+      });
+
+      const anthropicText = await anthropicResponse.text();
+      let anthropicData;
+      try { anthropicData = JSON.parse(anthropicText); } catch { anthropicData = { raw: anthropicText }; }
+
+      if (!anthropicResponse.ok) {
+        throw new Error(anthropicData.error?.message || `Anthropic API error: ${anthropicResponse.status}`);
+      }
+
+      // Handle tool calls (Anthropic format)
+      const anthropicToolUses = (anthropicData.content || []).filter(c => c.type === 'tool_use');
+      let finalContent = anthropicData.content || [];
+
+      if (anthropicToolUses.length > 0) {
+        // Build tool results in Anthropic format
+        const toolResultBlocks = [];
+        for (const tu of anthropicToolUses) {
+          let toolResult;
+          if (tu.name === 'fetch_player_injury_news') {
+            toolResult = await fetchPlayerInjuryNews(tu.input?.player);
+          } else if (tu.name === 'search_fantasy_news') {
+            toolResult = await fetchFantasyNews(tu.input?.query);
+          } else if (tu.name === 'fetch_team_starters') {
+            toolResult = await fetchTeamStarters(tu.input?.teamAbbr);
+          } else {
+            toolResult = { error: `Unknown tool ${tu.name}` };
+          }
+          toolResultBlocks.push({
+            type: 'tool_result',
+            tool_use_id: tu.id,
+            content: JSON.stringify(toolResult)
+          });
+        }
+
+        // Second call with tool results
+        const secondAnthropicRequest = {
+          model: modelForApi,
+          system: systemText,
+          messages: [
+            ...chatMessages,
+            { role: 'assistant', content: anthropicData.content },
+            { role: 'user', content: toolResultBlocks }
+          ],
+          max_tokens: 8000,
+          temperature: 0.3
+        };
+
+        const secondResponse = await fetch(apiUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(secondAnthropicRequest)
+        });
+        const secondText = await secondResponse.text();
+        try { anthropicData = JSON.parse(secondText); } catch { anthropicData = { raw: secondText }; }
+        if (!secondResponse.ok) {
+          throw new Error(anthropicData.error?.message || 'Anthropic API error');
+        }
+      }
+
+      // Extract text from Anthropic response
+      let responseContent = '';
+      if (Array.isArray(anthropicData.content)) {
+        responseContent = anthropicData.content
+          .filter(c => c.type === 'text')
+          .map(c => c.text)
+          .join('');
+      } else if (typeof anthropicData === 'string') {
+        responseContent = anthropicData;
+      } else {
+        responseContent = anthropicData.raw || '';
+      }
+
+      if (!responseContent || responseContent.trim() === '') {
+        sendResponse({ success: false, error: `Received empty response from Anthropic.` });
+        return;
+      }
+
+      sendResponse({ success: true, data: responseContent });
+      return;
+    }
+
+    // Standard OpenAI-compatible flow (OpenAI, Groq, Gemini OpenAI-compat)
+    let requestParams = {
       model: modelForApi,
       messages,
-      temperature: isGPT5Model ? 1.0 : 0.3, // Lower temperature for more data-based responses
+      temperature: isGPT5Model ? 1.0 : 0.3,
       tools,
       tool_choice: 'auto'
     };
-    
-    // Add max_tokens or max_completion_tokens based on model
-    if (isGPT5Model) {
-      requestParams.max_completion_tokens = 8000; // Much higher for GPT-5
+
+    if (usesCompletionTokens) {
+      requestParams.max_completion_tokens = 8000;
     } else {
-      requestParams.max_tokens = 4000; // Increased to prevent cutoffs
+      requestParams.max_tokens = 4000;
     }
     
     // First call allowing tool suggestions
@@ -547,8 +676,8 @@ ADP = average draft position (ie 5.06 means 5th round, 6th pick).`;
         messages: [ ...messages, initial.choices[0].message, ...toolMessages ],
         temperature: isGPT5Model ? 1.0 : 0.3
       };
-      
-      if (isGPT5Model) {
+
+      if (usesCompletionTokens) {
         secondRequestParams.max_completion_tokens = 8000;
       } else {
         secondRequestParams.max_tokens = 4000;
