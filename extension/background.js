@@ -333,7 +333,7 @@ async function getAllDraftData() {
 async function handleOpenAIRequest(requestData, sendResponse, messageId) {
   try {
     // Get keys from storage
-    const result = await chrome.storage.local.get(['openaiApiKey', 'googleApiKey', 'groqApiKey', 'anthropicApiKey', 'settings', 'pendingChatMessage']);
+    const result = await chrome.storage.local.get(['openaiApiKey', 'googleApiKey', 'groqApiKey', 'anthropicApiKey', 'openrouterApiKey', 'settings', 'pendingChatMessage']);
     
     // Get CSV data from request or context
     const csvDatasets = requestData.csvData ? Object.values(requestData.csvData) : 
@@ -345,13 +345,19 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
     // Simple, explicit routing:
     // - If model starts with 'groq-', route to Groq and strip the prefix before sending
     // - Else if starts with 'gemini-', route to Gemini
+    // - Else if starts with 'openrouter-', route to OpenRouter and strip the prefix
     // - Else if includes 'claude', route to Anthropic via OpenAI-compat endpoint
     // - Else route to OpenAI
     const isGroq = chatModel.startsWith('groq-');
     const isGemini = chatModel.startsWith('gemini-');
+    const isOpenRouter = chatModel.startsWith('openrouter-');
     const isClaude = chatModel.includes('claude');
-    const provider = isGroq ? 'groq' : (isGemini ? 'gemini' : (isClaude ? 'anthropic' : 'openai'));
-    const modelForApi = isGroq ? chatModel.replace(/^groq-/, '') : chatModel;
+    const provider = isGroq ? 'groq' : (isGemini ? 'gemini' : (isOpenRouter ? 'openrouter' : (isClaude ? 'anthropic' : 'openai')));
+    const modelForApi = isGroq
+      ? chatModel.replace(/^groq-/, '')
+      : isOpenRouter
+        ? chatModel.replace(/^openrouter-/, '')
+        : chatModel;
 
     let apiUrl = 'https://api.openai.com/v1/chat/completions';
     let headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${result.openaiApiKey || result.settings?.openaiApiKey || ''}` };
@@ -376,6 +382,22 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
         return;
       }
       headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${googleKey}` };
+    }
+
+    if (provider === 'openrouter') {
+      apiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+      const openrouterKey = result.openrouterApiKey || result.settings?.openrouterApiKey;
+      if (!openrouterKey) {
+        console.error('OpenRouter selected but API key missing. Model:', chatModel);
+        sendResponse({ success: false, error: 'OpenRouter API key not configured. Add it in Settings.', model: chatModel, provider: 'openrouter' });
+        return;
+      }
+      headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openrouterKey}`,
+        'HTTP-Referer': 'https://fantasy.espn.com/',
+        'X-Title': 'Fantasy Draft Assistant'
+      };
     }
 
     if (provider === 'anthropic') {

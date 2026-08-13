@@ -234,6 +234,12 @@
         </div>
 
         <div class="setting-group">
+          <label for="openrouter-key">OpenRouter API Key:</label>
+          <input type="password" id="openrouter-key" placeholder="sk-or-...">
+          <small>Needed for OpenRouter models like GPT-5.6 Luna</small>
+        </div>
+
+        <div class="setting-group">
           <label for="my-team-name">My Team Name:</label>
           <input type="text" id="my-team-name" placeholder="Enter your team name">
         </div>
@@ -266,6 +272,11 @@
               <option value="gpt-5">GPT-5</option>
               <option value="gpt-5-mini">GPT-5 Mini (fast)</option>
               <option value="gpt-5-nano">GPT-5 Nano (cheapest)</option>
+            </optgroup>
+            <optgroup label="OpenRouter">
+              <option value="openrouter-openai/gpt-5.6-luna">GPT-5.6 Luna (fast + cheap)</option>
+              <option value="openrouter-openai/gpt-5.6-terra">GPT-5.6 Terra</option>
+              <option value="openrouter-openai/gpt-5.6-sol">GPT-5.6 Sol</option>
             </optgroup>
             <optgroup label="Anthropic (via OpenAI compat)">
               <option value="claude-opus-4-20250514">Claude Opus 4</option>

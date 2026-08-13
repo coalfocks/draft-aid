@@ -53,6 +53,7 @@ const elements = {
   googleKey: document.getElementById('google-key'),
   groqKey: document.getElementById('groq-key'),
   anthropicKey: document.getElementById('anthropic-key'),
+  openrouterKey: document.getElementById('openrouter-key'),
   myTeamName: document.getElementById('my-team-name'),
   draftPosition: document.getElementById('draft-position'),
   chatModel: document.getElementById('chat-model'),
@@ -120,7 +121,7 @@ async function initialize() {
 
 // Load settings from storage
 async function loadSettings() {
-  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'anthropicApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount', 'csvDatasets', 'pendingChatResponse', 'keepers']);
+  const result = await chrome.storage.local.get(['settings', 'openaiApiKey', 'googleApiKey', 'groqApiKey', 'anthropicApiKey', 'openrouterApiKey', 'chatHistory', 'uploadedImages', 'lastLeagueId', 'lastPickCount', 'csvDatasets', 'pendingChatResponse', 'keepers']);
   
   // Load from either settings object or direct key
   const apiKey = result.openaiApiKey || result.settings?.openaiApiKey;
@@ -234,6 +235,7 @@ async function loadSettings() {
   if (elements.googleKey) elements.googleKey.value = result.googleApiKey || settings.googleApiKey || '';
   if (elements.groqKey) elements.groqKey.value = result.groqApiKey || settings.groqApiKey || '';
   if (elements.anthropicKey) elements.anthropicKey.value = result.anthropicApiKey || settings.anthropicApiKey || '';
+  if (elements.openrouterKey) elements.openrouterKey.value = result.openrouterApiKey || settings.openrouterApiKey || '';
   if (elements.myTeamName) elements.myTeamName.value = settings.myTeamName || '';
   if (elements.draftPosition) elements.draftPosition.value = settings.draftPosition || '';
   if (elements.chatModel) elements.chatModel.value = settings.chatModel || 'gpt-4o-mini';
@@ -2151,6 +2153,7 @@ async function saveSettings() {
   settings.googleApiKey = elements.googleKey?.value || '';
   settings.groqApiKey = elements.groqKey?.value || '';
   settings.anthropicApiKey = elements.anthropicKey?.value || '';
+  settings.openrouterApiKey = elements.openrouterKey?.value || '';
   settings.myTeamName = elements.myTeamName?.value || '';
   settings.draftPosition = elements.draftPosition?.value || '';
   settings.chatModel = elements.chatModel?.value || 'gpt-4o-mini';
@@ -2163,7 +2166,8 @@ async function saveSettings() {
       openaiApiKey: settings.openaiApiKey, // Also save separately for background script
       googleApiKey: settings.googleApiKey,
       groqApiKey: settings.groqApiKey,
-      anthropicApiKey: settings.anthropicApiKey
+      anthropicApiKey: settings.anthropicApiKey,
+      openrouterApiKey: settings.openrouterApiKey
     });
     console.log('✅ Settings saved successfully');
     
