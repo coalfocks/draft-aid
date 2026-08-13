@@ -1,0 +1,480 @@
+scoring,source,season,last_updated,ranking,player,position,position_rank,team,bye,tier,rank_best,rank_worst,rank_average,rank_stddev,adp_rank,player_id,fantasypros_url
+standard,FantasyPros ECR,2026,8/13,1,Jahmyr Gibbs,RB,RB1,DET,6,1,1,3,1.74,0.96,1,22968,https://www.fantasypros.com/nfl/players/jahmyr-gibbs.php
+standard,FantasyPros ECR,2026,8/13,2,Bijan Robinson,RB,RB2,ATL,11,1,1,5,2.30,1.08,2,23133,https://www.fantasypros.com/nfl/players/bijan-robinson.php
+standard,FantasyPros ECR,2026,8/13,3,Ja'Marr Chase,WR,WR1,CIN,6,1,2,6,2.60,0.97,3,19788,https://www.fantasypros.com/nfl/players/jamarr-chase.php
+standard,FantasyPros ECR,2026,8/13,4,Puka Nacua,WR,WR2,LAR,11,1,2,9,4.11,1.60,6,23180,https://www.fantasypros.com/nfl/players/puka-nacua.php
+standard,FantasyPros ECR,2026,8/13,5,Jaxon Smith-Njigba,WR,WR3,SEA,11,2,2,10,6.03,1.26,8,23070,https://www.fantasypros.com/nfl/players/jaxon-smith-njigba.php
+standard,FantasyPros ECR,2026,8/13,6,Jonathan Taylor,RB,RB3,IND,13,2,2,17,6.91,3.16,5,19217,https://www.fantasypros.com/nfl/players/jonathan-taylor.php
+standard,FantasyPros ECR,2026,8/13,7,Amon-Ra St. Brown,WR,WR4,DET,6,2,6,12,7.04,1.11,11,19799,https://www.fantasypros.com/nfl/players/amonra-stbrown.php
+standard,FantasyPros ECR,2026,8/13,8,Christian McCaffrey,RB,RB4,SF,8,2,3,28,9.81,5.26,4,16393,https://www.fantasypros.com/nfl/players/christian-mccaffrey.php
+standard,FantasyPros ECR,2026,8/13,9,CeeDee Lamb,WR,WR5,DAL,14,2,7,21,10.10,2.70,15,19202,https://www.fantasypros.com/nfl/players/ceedee-lamb.php
+standard,FantasyPros ECR,2026,8/13,10,James Cook III,RB,RB5,BUF,7,2,4,20,10.65,3.18,7,22958,https://www.fantasypros.com/nfl/players/james-cook.php
+standard,FantasyPros ECR,2026,8/13,11,Justin Jefferson,WR,WR6,MIN,6,2,7,38,11.89,5.37,16,19236,https://www.fantasypros.com/nfl/players/justin-jefferson.php
+standard,FantasyPros ECR,2026,8/13,12,Derrick Henry,RB,RB6,BAL,13,3,6,28,15.28,4.23,13,15514,https://www.fantasypros.com/nfl/players/derrick-henry.php
+standard,FantasyPros ECR,2026,8/13,13,Drake London,WR,WR7,ATL,11,3,9,37,16.03,4.84,21,23163,https://www.fantasypros.com/nfl/players/drake-london.php
+standard,FantasyPros ECR,2026,8/13,14,A.J. Brown,WR,WR8,NE,11,3,9,35,16.16,6.41,28,18218,https://www.fantasypros.com/nfl/players/aj-brown.php
+standard,FantasyPros ECR,2026,8/13,15,Nico Collins,WR,WR9,HOU,8,3,10,35,16.18,5.20,27,20130,https://www.fantasypros.com/nfl/players/nico-collins.php
+standard,FantasyPros ECR,2026,8/13,16,Saquon Barkley,RB,RB7,PHI,10,3,5,37,17.44,6.00,14,17240,https://www.fantasypros.com/nfl/players/saquon-barkley.php
+standard,FantasyPros ECR,2026,8/13,17,Brock Bowers,TE,TE1,LV,13,3,16,56,18.44,6.63,25,22955,https://www.fantasypros.com/nfl/players/brock-bowers.php
+standard,FantasyPros ECR,2026,8/13,18,Ashton Jeanty,RB,RB8,LV,13,3,8,42,18.70,7.35,10,25989,https://www.fantasypros.com/nfl/players/ashton-jeanty.php
+standard,FantasyPros ECR,2026,8/13,19,George Pickens,WR,WR10,DAL,14,3,11,39,19.73,5.66,26,22963,https://www.fantasypros.com/nfl/players/george-pickens.php
+standard,FantasyPros ECR,2026,8/13,20,Omarion Hampton,RB,RB9,LAC,7,4,13,42,24.44,7.94,12,25395,https://www.fantasypros.com/nfl/players/omarion-hampton.php
+standard,FantasyPros ECR,2026,8/13,21,Chase Brown,RB,RB10,CIN,6,4,8,42,24.49,7.07,17,25324,https://www.fantasypros.com/nfl/players/chase-brown.php
+standard,FantasyPros ECR,2026,8/13,22,Trey McBride,TE,TE2,ARI,14,4,16,67,25.13,10.36,20,22936,https://www.fantasypros.com/nfl/players/trey-mcbride.php
+standard,FantasyPros ECR,2026,8/13,23,Josh Allen,QB,QB1,BUF,7,4,25,28,25.16,0.58,18,17298,https://www.fantasypros.com/nfl/players/josh-allen-qb.php
+standard,FantasyPros ECR,2026,8/13,24,Kenneth Walker III,RB,RB11,KC,5,4,13,49,25.83,9.49,19,23021,https://www.fantasypros.com/nfl/players/kenneth-walker-rb.php
+standard,FantasyPros ECR,2026,8/13,25,De'Von Achane,RB,RB12,MIA,6,4,8,42,26.19,8.59,9,23136,https://www.fantasypros.com/nfl/players/devon-achane.php
+standard,FantasyPros ECR,2026,8/13,26,Chris Olave,WR,WR11,NO,8,4,19,46,27.58,6.73,29,20111,https://www.fantasypros.com/nfl/players/chris-olave.php
+standard,FantasyPros ECR,2026,8/13,27,Rashee Rice,WR,WR12,KC,5,4,9,61,28.51,10.67,33,23113,https://www.fantasypros.com/nfl/players/rashee-rice.php
+standard,FantasyPros ECR,2026,8/13,28,Lamar Jackson,QB,QB2,BAL,13,4,25,58,30.46,7.93,34,17233,https://www.fantasypros.com/nfl/players/lamar-jackson.php
+standard,FantasyPros ECR,2026,8/13,29,Tee Higgins,WR,WR13,CIN,6,4,19,51,32.50,7.18,42,19211,https://www.fantasypros.com/nfl/players/tee-higgins.php
+standard,FantasyPros ECR,2026,8/13,30,Zay Flowers,WR,WR14,BAL,13,4,14,50,32.63,8.61,43,22916,https://www.fantasypros.com/nfl/players/zay-flowers.php
+standard,FantasyPros ECR,2026,8/13,31,Malik Nabers,WR,WR15,NYG,8,4,10,70,32.65,13.16,32,25409,https://www.fantasypros.com/nfl/players/malik-nabers.php
+standard,FantasyPros ECR,2026,8/13,32,Kyren Williams,RB,RB13,LAR,11,4,13,48,33.41,7.61,22,23059,https://www.fantasypros.com/nfl/players/kyren-williams.php
+standard,FantasyPros ECR,2026,8/13,33,DeVonta Smith,WR,WR16,PHI,10,4,14,65,33.55,10.61,45,19222,https://www.fantasypros.com/nfl/players/devonta-smith.php
+standard,FantasyPros ECR,2026,8/13,34,Josh Jacobs,RB,RB14,GB,11,5,15,57,35.66,8.79,24,18269,https://www.fantasypros.com/nfl/players/josh-jacobs.php
+standard,FantasyPros ECR,2026,8/13,35,Drake Maye,QB,QB3,NE,11,5,25,90,36.14,13.56,54,23046,https://www.fantasypros.com/nfl/players/drake-maye.php
+standard,FantasyPros ECR,2026,8/13,36,Emeka Egbuka,WR,WR17,TB,10,5,10,61,36.46,10.06,46,23062,https://www.fantasypros.com/nfl/players/emeka-egbuka.php
+standard,FantasyPros ECR,2026,8/13,37,Tetairoa McMillan,WR,WR18,CAR,5,5,18,61,36.50,7.66,38,25417,https://www.fantasypros.com/nfl/players/tetairoa-mcmillan.php
+standard,FantasyPros ECR,2026,8/13,38,Javonte Williams,RB,RB15,DAL,14,5,20,52,37.69,7.67,30,22739,https://www.fantasypros.com/nfl/players/javonte-williams.php
+standard,FantasyPros ECR,2026,8/13,39,Colston Loveland,TE,TE3,CHI,10,5,16,76,39.08,12.94,47,26006,https://www.fantasypros.com/nfl/players/colston-loveland.php
+standard,FantasyPros ECR,2026,8/13,40,Breece Hall,RB,RB16,NYJ,13,5,33,60,42.34,5.18,31,22982,https://www.fantasypros.com/nfl/players/breece-hall.php
+standard,FantasyPros ECR,2026,8/13,41,Jeremiyah Love,RB,RB17,ARI,14,5,20,66,42.60,7.65,23,25403,https://www.fantasypros.com/nfl/players/jeremiyah-love.php
+standard,FantasyPros ECR,2026,8/13,42,Joe Burrow,QB,QB4,CIN,6,5,27,68,43.49,12.06,56,19196,https://www.fantasypros.com/nfl/players/joe-burrow.php
+standard,FantasyPros ECR,2026,8/13,43,Ladd McConkey,WR,WR19,LAC,7,5,24,61,43.71,8.42,49,26122,https://www.fantasypros.com/nfl/players/ladd-mcconkey.php
+standard,FantasyPros ECR,2026,8/13,44,Davante Adams,WR,WR20,LAR,11,5,31,80,46.04,8.73,55,12123,https://www.fantasypros.com/nfl/players/davante-adams.php
+standard,FantasyPros ECR,2026,8/13,45,Jaylen Waddle,WR,WR21,DEN,10,5,21,66,46.90,10.26,50,19790,https://www.fantasypros.com/nfl/players/jaylen-waddle.php
+standard,FantasyPros ECR,2026,8/13,46,Terry McLaurin,WR,WR22,WAS,7,5,31,74,47.13,8.72,58,18466,https://www.fantasypros.com/nfl/players/terry-mclaurin.php
+standard,FantasyPros ECR,2026,8/13,47,Jameson Williams,WR,WR23,DET,6,5,31,81,47.84,10.99,57,23677,https://www.fantasypros.com/nfl/players/jameson-williams.php
+standard,FantasyPros ECR,2026,8/13,48,Jayden Daniels,QB,QB5,WAS,7,5,27,90,48.73,14.65,63,22902,https://www.fantasypros.com/nfl/players/jayden-daniels.php
+standard,FantasyPros ECR,2026,8/13,49,Christian Watson,WR,WR24,GB,11,5,31,88,48.99,10.67,67,23886,https://www.fantasypros.com/nfl/players/christian-watson.php
+standard,FantasyPros ECR,2026,8/13,50,Travis Etienne Jr.,RB,RB18,NO,8,6,28,64,49.58,6.89,37,19231,https://www.fantasypros.com/nfl/players/travis-etienne.php
+standard,FantasyPros ECR,2026,8/13,51,Garrett Wilson,WR,WR25,NYJ,13,6,26,70,51.50,9.30,39,23072,https://www.fantasypros.com/nfl/players/garrett-wilson.php
+standard,FantasyPros ECR,2026,8/13,52,Cam Skattebo,RB,RB19,NYG,8,6,40,72,53.76,7.16,36,27166,https://www.fantasypros.com/nfl/players/cam-skattebo.php
+standard,FantasyPros ECR,2026,8/13,53,Bucky Irving,RB,RB20,TB,10,6,30,72,54.34,7.96,35,25981,https://www.fantasypros.com/nfl/players/bucky-irving.php
+standard,FantasyPros ECR,2026,8/13,54,Quinshon Judkins,RB,RB21,CLE,11,6,31,71,54.36,8.38,40,25391,https://www.fantasypros.com/nfl/players/quinshon-judkins.php
+standard,FantasyPros ECR,2026,8/13,55,Jalen Hurts,QB,QB6,PHI,10,6,27,79,54.79,11.19,70,19275,https://www.fantasypros.com/nfl/players/jalen-hurts.php
+standard,FantasyPros ECR,2026,8/13,56,D'Andre Swift,RB,RB22,CHI,10,6,32,71,54.84,7.15,53,19210,https://www.fantasypros.com/nfl/players/dandre-swift.php
+standard,FantasyPros ECR,2026,8/13,57,Rome Odunze,WR,WR26,CHI,10,6,39,80,55.78,9.88,66,25411,https://www.fantasypros.com/nfl/players/rome-odunze.php
+standard,FantasyPros ECR,2026,8/13,58,Luther Burden III,WR,WR27,CHI,10,6,35,75,55.89,8.60,41,27016,https://www.fantasypros.com/nfl/players/luther-burden-iii.php
+standard,FantasyPros ECR,2026,8/13,59,Mike Evans,WR,WR28,SF,8,6,35,80,55.96,9.73,61,12119,https://www.fantasypros.com/nfl/players/mike-evans.php
+standard,FantasyPros ECR,2026,8/13,60,David Montgomery,RB,RB23,HOU,8,6,30,72,56.23,7.91,51,18239,https://www.fantasypros.com/nfl/players/david-montgomery.php
+standard,FantasyPros ECR,2026,8/13,61,Tucker Kraft,TE,TE4,GB,11,6,22,94,56.44,14.26,74,25298,https://www.fantasypros.com/nfl/players/tucker-kraft.php
+standard,FantasyPros ECR,2026,8/13,62,DJ Moore,WR,WR29,BUF,7,6,35,93,59.55,11.61,52,17265,https://www.fantasypros.com/nfl/players/dj-moore-wr.php
+standard,FantasyPros ECR,2026,8/13,63,TreVeyon Henderson,RB,RB24,NE,11,6,33,92,60.43,9.92,44,23065,https://www.fantasypros.com/nfl/players/treveyon-henderson.php
+standard,FantasyPros ECR,2026,8/13,64,Tyler Warren,TE,TE5,IND,13,6,16,84,61.95,12.50,59,26434,https://www.fantasypros.com/nfl/players/tyler-warren.php
+standard,FantasyPros ECR,2026,8/13,65,Bhayshul Tuten,RB,RB25,JAC,7,6,45,87,63.04,9.31,48,27297,https://www.fantasypros.com/nfl/players/bhayshul-tuten.php
+standard,FantasyPros ECR,2026,8/13,66,Jadarian Price,RB,RB26,SEA,11,6,28,113,65.76,12.33,68,27329,https://www.fantasypros.com/nfl/players/jadarian-price.php
+standard,FantasyPros ECR,2026,8/13,67,Caleb Williams,QB,QB7,CHI,10,6,36,97,66.46,11.62,86,23084,https://www.fantasypros.com/nfl/players/caleb-williams.php
+standard,FantasyPros ECR,2026,8/13,68,Justin Herbert,QB,QB8,LAC,7,6,36,104,68.64,12.59,90,18635,https://www.fantasypros.com/nfl/players/justin-herbert.php
+standard,FantasyPros ECR,2026,8/13,69,Marvin Harrison Jr.,WR,WR30,ARI,14,7,51,98,74.91,9.16,85,23064,https://www.fantasypros.com/nfl/players/marvin-harrison-jr.php
+standard,FantasyPros ECR,2026,8/13,70,Carnell Tate,WR,WR31,TEN,9,7,44,183,75.81,16.52,72,26009,https://www.fantasypros.com/nfl/players/carnell-tate.php
+standard,FantasyPros ECR,2026,8/13,71,Jaylen Warren,RB,RB27,PIT,9,7,55,101,76.48,8.40,60,24209,https://www.fantasypros.com/nfl/players/jaylen-warren.php
+standard,FantasyPros ECR,2026,8/13,72,Tony Pollard,RB,RB28,TEN,9,7,52,99,76.68,9.98,71,18705,https://www.fantasypros.com/nfl/players/tony-pollard.php
+standard,FantasyPros ECR,2026,8/13,73,Brian Thomas Jr.,WR,WR32,JAC,7,7,51,98,77.15,8.14,76,23000,https://www.fantasypros.com/nfl/players/brian-thomas-jr.php
+standard,FantasyPros ECR,2026,8/13,74,Trevor Lawrence,QB,QB9,JAC,7,7,58,103,77.33,12.20,88,19780,https://www.fantasypros.com/nfl/players/trevor-lawrence.php
+standard,FantasyPros ECR,2026,8/13,75,Parker Washington,WR,WR33,JAC,7,7,51,122,77.51,15.80,77,23106,https://www.fantasypros.com/nfl/players/parker-washington.php
+standard,FantasyPros ECR,2026,8/13,76,Sam LaPorta,TE,TE6,DET,6,7,56,95,77.68,7.25,87,22978,https://www.fantasypros.com/nfl/players/sam-laporta.php
+standard,FantasyPros ECR,2026,8/13,77,DK Metcalf,WR,WR34,PIT,9,7,50,101,77.94,9.38,84,18219,https://www.fantasypros.com/nfl/players/dk-metcalf.php
+standard,FantasyPros ECR,2026,8/13,78,Dak Prescott,QB,QB10,DAL,14,7,36,104,78.68,13.15,91,15600,https://www.fantasypros.com/nfl/players/dak-prescott.php
+standard,FantasyPros ECR,2026,8/13,79,Rhamondre Stevenson,RB,RB29,NE,11,7,60,108,79.74,9.86,65,22726,https://www.fantasypros.com/nfl/players/rhamondre-stevenson.php
+standard,FantasyPros ECR,2026,8/13,80,Alec Pierce,WR,WR35,IND,13,7,48,142,80.49,13.15,96,23791,https://www.fantasypros.com/nfl/players/alec-pierce.php
+standard,FantasyPros ECR,2026,8/13,81,Rico Dowdle,RB,RB30,PIT,9,7,64,119,82.20,11.55,69,19647,https://www.fantasypros.com/nfl/players/rico-dowdle.php
+standard,FantasyPros ECR,2026,8/13,82,Chuba Hubbard,RB,RB31,CAR,5,7,63,117,82.80,10.86,80,19792,https://www.fantasypros.com/nfl/players/chuba-hubbard.php
+standard,FantasyPros ECR,2026,8/13,83,Courtland Sutton,WR,WR36,DEN,10,7,54,114,84.64,11.62,81,17253,https://www.fantasypros.com/nfl/players/courtland-sutton.php
+standard,FantasyPros ECR,2026,8/13,84,J.K. Dobbins,RB,RB32,DEN,10,7,60,126,84.90,14.16,78,19245,https://www.fantasypros.com/nfl/players/jk-dobbins.php
+standard,FantasyPros ECR,2026,8/13,85,Harold Fannin Jr.,TE,TE7,CLE,11,7,34,123,86.78,12.38,64,27050,https://www.fantasypros.com/nfl/players/harold-fannin-jr.php
+standard,FantasyPros ECR,2026,8/13,86,Kyle Pitts Sr.,TE,TE8,ATL,11,7,66,110,88.65,6.99,79,20164,https://www.fantasypros.com/nfl/players/kyle-pitts.php
+standard,FantasyPros ECR,2026,8/13,87,Blake Corum,RB,RB33,LAR,11,7,66,126,88.79,12.29,83,23013,https://www.fantasypros.com/nfl/players/blake-corum.php
+standard,FantasyPros ECR,2026,8/13,88,Jordyn Tyson,WR,WR37,NO,8,7,59,169,90.21,15.61,82,26035,https://www.fantasypros.com/nfl/players/jordyn-tyson.php
+standard,FantasyPros ECR,2026,8/13,89,Quentin Johnston,WR,WR38,LAC,7,7,48,120,90.84,11.78,111,23123,https://www.fantasypros.com/nfl/players/quentin-johnston.php
+standard,FantasyPros ECR,2026,8/13,90,Kyle Monangai,RB,RB34,CHI,10,7,64,121,92.20,12.29,73,27131,https://www.fantasypros.com/nfl/players/kyle-monangai.php
+standard,FantasyPros ECR,2026,8/13,91,Jaxson Dart,QB,QB11,NYG,8,7,62,118,92.60,13.23,92,23160,https://www.fantasypros.com/nfl/players/jaxson-dart.php
+standard,FantasyPros ECR,2026,8/13,92,Brock Purdy,QB,QB12,SF,8,8,62,128,96.14,10.27,113,19797,https://www.fantasypros.com/nfl/players/brock-purdy.php
+standard,FantasyPros ECR,2026,8/13,93,Chris Godwin Jr.,WR,WR39,TB,10,8,74,142,96.43,12.98,89,16406,https://www.fantasypros.com/nfl/players/chris-godwin.php
+standard,FantasyPros ECR,2026,8/13,94,Jacory Croskey-Merritt,RB,RB35,WAS,7,8,72,128,98.56,11.08,98,27316,https://www.fantasypros.com/nfl/players/jacory-croskeymerritt.php
+standard,FantasyPros ECR,2026,8/13,95,Jordan Addison,WR,WR40,MIN,6,8,75,139,99.10,12.33,103,23107,https://www.fantasypros.com/nfl/players/jordan-addison.php
+standard,FantasyPros ECR,2026,8/13,96,Bo Nix,QB,QB13,DEN,10,8,68,128,100.00,10.30,120,22910,https://www.fantasypros.com/nfl/players/bo-nix.php
+standard,FantasyPros ECR,2026,8/13,97,Michael Wilson,WR,WR41,ARI,14,8,69,139,100.06,15.23,75,25333,https://www.fantasypros.com/nfl/players/michael-wilson.php
+standard,FantasyPros ECR,2026,8/13,98,Patrick Mahomes II,QB,QB14,KC,5,8,68,118,100.48,10.32,106,16413,https://www.fantasypros.com/nfl/players/patrick-mahomes.php
+standard,FantasyPros ECR,2026,8/13,99,RJ Harvey,RB,RB36,DEN,10,8,57,143,101.25,18.90,62,27142,https://www.fantasypros.com/nfl/players/rj-harvey.php
+standard,FantasyPros ECR,2026,8/13,100,Makai Lemon,WR,WR42,PHI,10,8,65,139,101.49,15.24,197,25420,https://www.fantasypros.com/nfl/players/makai-lemon.php
+standard,FantasyPros ECR,2026,8/13,101,George Kittle,TE,TE9,SF,8,8,76,228,102.70,26.62,107,16499,https://www.fantasypros.com/nfl/players/george-kittle.php
+standard,FantasyPros ECR,2026,8/13,102,Matthew Stafford,QB,QB15,LAR,11,8,62,135,103.18,14.33,118,9451,https://www.fantasypros.com/nfl/players/matthew-stafford.php
+standard,FantasyPros ECR,2026,8/13,103,Jordan Mason,RB,RB37,MIN,6,8,77,134,104.19,13.11,97,22969,https://www.fantasypros.com/nfl/players/jordan-mason.php
+standard,FantasyPros ECR,2026,8/13,104,Jonathon Brooks,RB,RB38,CAR,5,8,66,230,104.31,30.08,125,26148,https://www.fantasypros.com/nfl/players/jonathon-brooks.php
+standard,FantasyPros ECR,2026,8/13,105,Dalton Kincaid,TE,TE10,BUF,7,8,76,154,104.53,14.96,99,25247,https://www.fantasypros.com/nfl/players/dalton-kincaid.php
+standard,FantasyPros ECR,2026,8/13,106,Jared Goff,QB,QB16,DET,6,8,58,124,106.64,12.53,126,15501,https://www.fantasypros.com/nfl/players/jared-goff.php
+standard,FantasyPros ECR,2026,8/13,107,Travis Kelce,TE,TE11,KC,5,8,76,154,108.35,12.69,101,11594,https://www.fantasypros.com/nfl/players/travis-kelce.php
+standard,FantasyPros ECR,2026,8/13,108,Jayden Reed,WR,WR43,GB,11,8,80,147,108.81,14.10,122,23020,https://www.fantasypros.com/nfl/players/jayden-reed.php
+standard,FantasyPros ECR,2026,8/13,109,Michael Pittman Jr.,WR,WR44,PIT,9,8,70,132,110.55,14.84,104,19278,https://www.fantasypros.com/nfl/players/michael-pittman.php
+standard,FantasyPros ECR,2026,8/13,110,Rachaad White,RB,RB39,WAS,7,8,77,151,111.49,14.38,117,23891,https://www.fantasypros.com/nfl/players/rachaad-white.php
+standard,FantasyPros ECR,2026,8/13,111,Dallas Goedert,TE,TE12,PHI,10,8,76,169,114.35,16.98,116,17270,https://www.fantasypros.com/nfl/players/dallas-goedert.php
+standard,FantasyPros ECR,2026,8/13,112,Kenny Gainwell,RB,RB40,TB,10,8,85,148,114.59,11.08,95,23310,https://www.fantasypros.com/nfl/players/kenneth-gainwell.php
+standard,FantasyPros ECR,2026,8/13,113,Jakobi Meyers,WR,WR45,JAC,7,8,74,165,115.09,16.89,94,18598,https://www.fantasypros.com/nfl/players/jakobi-meyers.php
+standard,FantasyPros ECR,2026,8/13,114,Aaron Jones Sr.,RB,RB41,MIN,6,8,82,143,115.16,12.25,100,16673,https://www.fantasypros.com/nfl/players/aaron-jones.php
+standard,FantasyPros ECR,2026,8/13,115,Mark Andrews,TE,TE13,BAL,13,8,76,195,115.33,22.16,108,17269,https://www.fantasypros.com/nfl/players/mark-andrews.php
+standard,FantasyPros ECR,2026,8/13,116,Isaiah Likely,TE,TE14,NYG,8,8,81,228,115.38,26.67,102,23781,https://www.fantasypros.com/nfl/players/isaiah-likely.php
+standard,FantasyPros ECR,2026,8/13,117,Kyler Murray,QB,QB17,MIN,6,8,90,151,116.03,11.79,153,18600,https://www.fantasypros.com/nfl/players/kyler-murray.php
+standard,FantasyPros ECR,2026,8/13,118,Baker Mayfield,QB,QB18,TB,10,8,73,136,119.05,11.02,141,17237,https://www.fantasypros.com/nfl/players/baker-mayfield.php
+standard,FantasyPros ECR,2026,8/13,119,Josh Downs,WR,WR46,IND,13,8,80,149,119.34,15.76,110,24706,https://www.fantasypros.com/nfl/players/josh-downs.php
+standard,FantasyPros ECR,2026,8/13,120,Xavier Worthy,WR,WR47,KC,5,8,89,183,119.49,15.68,130,23019,https://www.fantasypros.com/nfl/players/xavier-worthy.php
+standard,FantasyPros ECR,2026,8/13,121,Chris Rodriguez Jr.,RB,RB42,JAC,7,8,87,176,120.03,17.22,149,22986,https://www.fantasypros.com/nfl/players/chris-rodriguez-jr.php
+standard,FantasyPros ECR,2026,8/13,122,Jordan Love,QB,QB19,GB,11,8,90,152,121.60,10.94,140,19246,https://www.fantasypros.com/nfl/players/jordan-love.php
+standard,FantasyPros ECR,2026,8/13,123,Tyler Shough,QB,QB20,NO,8,9,103,152,123.63,12.15,147,23096,https://www.fantasypros.com/nfl/players/tyler-shough.php
+standard,FantasyPros ECR,2026,8/13,124,Wan'Dale Robinson,WR,WR48,TEN,9,9,80,163,124.36,14.11,93,22985,https://www.fantasypros.com/nfl/players/wandale-robinson.php
+standard,FantasyPros ECR,2026,8/13,125,Jayden Higgins,WR,WR49,HOU,8,9,101,179,124.38,14.66,142,27077,https://www.fantasypros.com/nfl/players/jayden-higgins.php
+standard,FantasyPros ECR,2026,8/13,126,Jake Ferguson,TE,TE15,DAL,14,9,93,157,128.68,15.46,105,22718,https://www.fantasypros.com/nfl/players/jake-ferguson.php
+standard,FantasyPros ECR,2026,8/13,127,Romeo Doubs,WR,WR50,NE,11,9,92,194,129.53,17.99,128,23794,https://www.fantasypros.com/nfl/players/romeo-doubs.php
+standard,FantasyPros ECR,2026,8/13,128,Tyler Allgeier,RB,RB43,ARI,14,9,92,156,129.61,12.80,109,24172,https://www.fantasypros.com/nfl/players/tyler-allgeier.php
+standard,FantasyPros ECR,2026,8/13,129,Tyrone Tracy Jr.,RB,RB44,NYG,8,9,113,176,130.08,10.13,121,22980,https://www.fantasypros.com/nfl/players/tyrone-tracy-jr.php
+standard,FantasyPros ECR,2026,8/13,130,Woody Marks,RB,RB45,HOU,8,9,95,163,132.55,13.97,114,27520,https://www.fantasypros.com/nfl/players/woody-marks.php
+standard,FantasyPros ECR,2026,8/13,131,Zach Charbonnet,RB,RB46,SEA,11,9,63,227,133.59,22.91,112,23152,https://www.fantasypros.com/nfl/players/zach-charbonnet.php
+standard,FantasyPros ECR,2026,8/13,132,Malik Willis,QB,QB21,MIA,6,9,97,308,133.66,26.64,152,23499,https://www.fantasypros.com/nfl/players/malik-willis.php
+standard,FantasyPros ECR,2026,8/13,133,Jalen Coker,WR,WR51,CAR,5,9,109,168,134.64,13.69,144,26403,https://www.fantasypros.com/nfl/players/jalen-coker.php
+standard,FantasyPros ECR,2026,8/13,134,Matthew Golden,WR,WR52,GB,11,9,89,200,135.96,21.65,165,26024,https://www.fantasypros.com/nfl/players/matthew-golden.php
+standard,FantasyPros ECR,2026,8/13,135,Stefon Diggs,WR,WR53,WAS,7,9,75,246,127.19,37.50,124,13981,https://www.fantasypros.com/nfl/players/stefon-diggs.php
+standard,FantasyPros ECR,2026,8/13,136,KC Concepcion,WR,WR54,CLE,11,9,98,256,141.26,28.41,139,27331,https://www.fantasypros.com/nfl/players/kevin-concepcion.php
+standard,FantasyPros ECR,2026,8/13,137,Rashid Shaheed,WR,WR55,SEA,11,9,101,177,141.56,14.98,161,24687,https://www.fantasypros.com/nfl/players/rashid-shaheed.php
+standard,FantasyPros ECR,2026,8/13,138,Khalil Shakir,WR,WR56,BUF,7,9,114,173,142.21,14.10,137,23748,https://www.fantasypros.com/nfl/players/khalil-shakir.php
+standard,FantasyPros ECR,2026,8/13,139,Isiah Pacheco,RB,RB47,DET,6,9,117,176,143.94,11.11,158,24333,https://www.fantasypros.com/nfl/players/isiah-pacheco.php
+standard,FantasyPros ECR,2026,8/13,140,Sam Darnold,QB,QB22,SEA,11,9,124,213,145.73,15.20,170,17236,https://www.fantasypros.com/nfl/players/sam-darnold.php
+standard,FantasyPros ECR,2026,8/13,141,C.J. Stroud,QB,QB23,HOU,8,9,107,241,145.85,19.72,172,23071,https://www.fantasypros.com/nfl/players/cj-stroud.php
+standard,FantasyPros ECR,2026,8/13,142,Deebo Samuel Sr.,WR,WR57,SF,8,9,81,238,139.46,35.89,143,18244,https://www.fantasypros.com/nfl/players/deebo-samuel.php
+standard,FantasyPros ECR,2026,8/13,143,Tank Bigsby,RB,RB48,PHI,10,9,121,218,147.19,17.12,163,22908,https://www.fantasypros.com/nfl/players/tank-bigsby.php
+standard,FantasyPros ECR,2026,8/13,144,Brian Robinson Jr.,RB,RB49,ATL,11,9,126,196,149.83,12.08,115,20094,https://www.fantasypros.com/nfl/players/brian-robinson-jr.php
+standard,FantasyPros ECR,2026,8/13,145,Keaton Mitchell,RB,RB50,LAC,7,9,113,232,146.72,21.85,154,25360,https://www.fantasypros.com/nfl/players/keaton-mitchell.php
+standard,FantasyPros ECR,2026,8/13,146,Juwan Johnson,TE,TE16,NO,8,9,110,202,150.05,21.86,119,19562,https://www.fantasypros.com/nfl/players/juwan-johnson.php
+standard,FantasyPros ECR,2026,8/13,147,Alvin Kamara,RB,RB51,NO,8,9,119,221,151.21,16.35,127,16421,https://www.fantasypros.com/nfl/players/alvin-kamara.php
+standard,FantasyPros ECR,2026,8/13,148,Brenton Strange,TE,TE17,JAC,7,9,111,245,153.25,27.10,132,25345,https://www.fantasypros.com/nfl/players/brenton-strange.php
+standard,FantasyPros ECR,2026,8/13,149,Hunter Henry,TE,TE18,NE,11,9,110,202,153.35,20.90,123,15561,https://www.fantasypros.com/nfl/players/hunter-henry.php
+standard,FantasyPros ECR,2026,8/13,150,Tyjae Spears,RB,RB52,TEN,9,9,119,230,156.76,18.39,133,25323,https://www.fantasypros.com/nfl/players/tyjae-spears.php
+standard,FantasyPros ECR,2026,8/13,151,Cam Ward,QB,QB24,TEN,9,9,124,255,159.01,23.83,190,24755,https://www.fantasypros.com/nfl/players/cam-ward.php
+standard,FantasyPros ECR,2026,8/13,152,Oronde Gadsden II,TE,TE19,LAC,7,9,96,235,159.23,31.13,131,25997,https://www.fantasypros.com/nfl/players/oronde-gadsden-ii.php
+standard,FantasyPros ECR,2026,8/13,153,Dylan Sampson,RB,RB53,CLE,11,9,121,221,159.25,19.47,151,27102,https://www.fantasypros.com/nfl/players/dylan-sampson.php
+standard,FantasyPros ECR,2026,8/13,154,Houston Texans,DST,DST1,HOU,8,10,149,170,151.96,4.76,135,8120,https://www.fantasypros.com/nfl/players/houston-defense.php
+standard,FantasyPros ECR,2026,8/13,155,Chig Okonkwo,TE,TE20,WAS,7,10,111,251,166.45,31.17,146,23982,https://www.fantasypros.com/nfl/players/chigoziem-okonkwo.php
+standard,FantasyPros ECR,2026,8/13,156,Jonah Coleman,RB,RB54,DEN,10,10,126,310,160.68,31.84,134,27320,https://www.fantasypros.com/nfl/players/jonah-coleman.php
+standard,FantasyPros ECR,2026,8/13,157,Daniel Jones,QB,QB25,IND,13,10,112,330,166.93,38.24,198,18232,https://www.fantasypros.com/nfl/players/daniel-jones.php
+standard,FantasyPros ECR,2026,8/13,158,Jauan Jennings,WR,WR58,MIN,6,10,100,276,161.17,29.24,155,19590,https://www.fantasypros.com/nfl/players/jauan-jennings.php
+standard,FantasyPros ECR,2026,8/13,159,Jerry Jeudy,WR,WR59,CLE,11,10,131,226,170.09,19.56,173,19201,https://www.fantasypros.com/nfl/players/jerry-jeudy.php
+standard,FantasyPros ECR,2026,8/13,160,Braelon Allen,RB,RB55,NYJ,13,10,121,264,167.24,30.50,168,24346,https://www.fantasypros.com/nfl/players/braelon-allen.php
+standard,FantasyPros ECR,2026,8/13,161,Denzel Boston,WR,WR60,CLE,11,10,116,311,170.65,33.53,169,27339,https://www.fantasypros.com/nfl/players/denzel-boston.php
+standard,FantasyPros ECR,2026,8/13,162,Adonai Mitchell,WR,WR61,NYJ,13,10,138,272,171.93,25.61,200,24357,https://www.fantasypros.com/nfl/players/adonai-mitchell.php
+standard,FantasyPros ECR,2026,8/13,163,Denver Broncos,DST,DST2,DEN,10,10,150,182,162.47,5.20,156,8090,https://www.fantasypros.com/nfl/players/denver-defense.php
+standard,FantasyPros ECR,2026,8/13,164,Jalen McMillan,WR,WR62,TB,10,10,122,295,173.49,27.26,178,23179,https://www.fantasypros.com/nfl/players/jalen-mcmillan.php
+standard,FantasyPros ECR,2026,8/13,165,Omar Cooper Jr.,WR,WR63,NYJ,13,10,139,310,178.01,32.73,171,28127,https://www.fantasypros.com/nfl/players/omar-cooper-jr.php
+standard,FantasyPros ECR,2026,8/13,166,Seattle Seahawks,DST,DST3,SEA,11,10,160,182,166.71,3.59,148,8260,https://www.fantasypros.com/nfl/players/seattle-defense.php
+standard,FantasyPros ECR,2026,8/13,167,Los Angeles Rams,DST,DST4,LAR,11,10,150,190,167.43,7.39,136,8280,https://www.fantasypros.com/nfl/players/los-angeles-rams-defense.php
+standard,FantasyPros ECR,2026,8/13,168,Bryce Young,QB,QB26,CAR,5,10,136,284,181.53,29.02,201,22900,https://www.fantasypros.com/nfl/players/bryce-young.php
+standard,FantasyPros ECR,2026,8/13,169,Tre Tucker,WR,WR64,LV,13,10,116,288,179.01,28.06,214,25337,https://www.fantasypros.com/nfl/players/tre-tucker.php
+standard,FantasyPros ECR,2026,8/13,170,De'Zhaun Stribling,WR,WR65,SF,8,10,98,287,182.88,44.50,204,28138,https://www.fantasypros.com/nfl/players/dezhaun-stribling.php
+standard,FantasyPros ECR,2026,8/13,171,Philadelphia Eagles,DST,DST5,PHI,10,10,166,234,173.38,8.69,162,8230,https://www.fantasypros.com/nfl/players/philadelphia-defense.php
+standard,FantasyPros ECR,2026,8/13,172,Kimani Vidal,RB,RB56,LAC,7,10,126,265,183.34,32.12,184,26355,https://www.fantasypros.com/nfl/players/kimani-vidal.php
+standard,FantasyPros ECR,2026,8/13,173,Travis Hunter,WR,WR66,JAC,7,10,125,292,180.85,30.46,186,26034,https://www.fantasypros.com/nfl/players/travis-hunter.php
+standard,FantasyPros ECR,2026,8/13,174,Emmett Johnson,RB,RB57,KC,5,10,145,308,184.73,35.51,164,28107,https://www.fantasypros.com/nfl/players/emmett-johnson.php
+standard,FantasyPros ECR,2026,8/13,175,Emanuel Wilson,RB,RB58,SEA,11,10,130,282,185.72,32.57,226,25885,https://www.fantasypros.com/nfl/players/emanuel-wilson.php
+standard,FantasyPros ECR,2026,8/13,176,Ray Davis,RB,RB59,BUF,7,10,145,259,191.84,31.72,209,26191,https://www.fantasypros.com/nfl/players/ray-davis.php
+standard,FantasyPros ECR,2026,8/13,177,Tre' Harris,WR,WR67,LAC,7,10,142,302,189.85,28.06,215,26215,https://www.fantasypros.com/nfl/players/tre-harris.php
+standard,FantasyPros ECR,2026,8/13,178,Brandon Aubrey,K,K1,DAL,14,10,169,197,186.03,2.63,129,26068,https://www.fantasypros.com/nfl/players/brandon-aubrey.php
+standard,FantasyPros ECR,2026,8/13,179,Kayshon Boutte,WR,WR68,NE,11,10,149,271,186.42,24.11,174,22989,https://www.fantasypros.com/nfl/players/kayshon-boutte.php
+standard,FantasyPros ECR,2026,8/13,180,AJ Barner,TE,TE21,SEA,11,10,137,245,195.88,23.04,181,26335,https://www.fantasypros.com/nfl/players/aj-barner.php
+standard,FantasyPros ECR,2026,8/13,181,Sean Tucker,RB,RB60,TB,10,10,139,279,188.99,35.07,180,23679,https://www.fantasypros.com/nfl/players/sean-tucker.php
+standard,FantasyPros ECR,2026,8/13,182,New England Patriots,DST,DST6,NE,11,10,166,219,184.28,6.73,175,8180,https://www.fantasypros.com/nfl/players/new-england-defense.php
+standard,FantasyPros ECR,2026,8/13,183,Pittsburgh Steelers,DST,DST7,PIT,9,10,166,273,187.70,11.05,216,8240,https://www.fantasypros.com/nfl/players/pittsburgh-defense.php
+standard,FantasyPros ECR,2026,8/13,184,Jacksonville Jaguars,DST,DST8,JAC,7,10,167,278,187.76,12.99,196,8140,https://www.fantasypros.com/nfl/players/jacksonville-defense.php
+standard,FantasyPros ECR,2026,8/13,185,Minnesota Vikings,DST,DST9,MIN,6,10,170,234,185.03,7.99,182,8170,https://www.fantasypros.com/nfl/players/minnesota-defense.php
+standard,FantasyPros ECR,2026,8/13,186,Ryan Flournoy,WR,WR69,DAL,14,10,153,324,193.40,26.90,249,26398,https://www.fantasypros.com/nfl/players/ryan-flournoy.php
+standard,FantasyPros ECR,2026,8/13,187,Terrance Ferguson,TE,TE22,LAR,11,10,123,391,198.65,40.69,191,23091,https://www.fantasypros.com/nfl/players/terrance-ferguson.php
+standard,FantasyPros ECR,2026,8/13,188,Jalen Nailor,WR,WR70,LV,13,10,115,305,196.18,44.63,188,24177,https://www.fantasypros.com/nfl/players/jalen-nailor.php
+standard,FantasyPros ECR,2026,8/13,189,Los Angeles Chargers,DST,DST10,LAC,7,10,170,279,191.05,13.64,225,8250,https://www.fantasypros.com/nfl/players/los-angeles-chargers-defense.php
+standard,FantasyPros ECR,2026,8/13,190,Mike Washington Jr.,RB,RB61,LV,13,10,143,293,189.05,31.43,167,28108,https://www.fantasypros.com/nfl/players/mike-washington-jr.php
+standard,FantasyPros ECR,2026,8/13,191,Dalton Schultz,TE,TE23,HOU,8,11,122,245,203.14,29.68,145,17349,https://www.fantasypros.com/nfl/players/dalton-schultz.php
+standard,FantasyPros ECR,2026,8/13,192,Cameron Dicker,K,K2,LAC,7,11,186,233,193.76,5.21,160,23901,https://www.fantasypros.com/nfl/players/cameron-dicker.php
+standard,FantasyPros ECR,2026,8/13,193,Ka'imi Fairbairn,K,K3,HOU,8,11,186,199,191.49,2.07,176,15756,https://www.fantasypros.com/nfl/players/kaimi-fairbairn.php
+standard,FantasyPros ECR,2026,8/13,194,Nicholas Singleton,RB,RB62,TEN,9,11,131,320,203.30,39.47,189,24343,https://www.fantasypros.com/nfl/players/nick-singleton.php
+standard,FantasyPros ECR,2026,8/13,195,Calvin Ridley,WR,WR71,TEN,9,11,138,318,203.77,32.30,179,17258,https://www.fantasypros.com/nfl/players/calvin-ridley.php
+standard,FantasyPros ECR,2026,8/13,196,Kenyon Sadiq,TE,TE24,NYJ,13,11,111,381,204.08,41.95,138,26055,https://www.fantasypros.com/nfl/players/kenyon-sadiq.php
+standard,FantasyPros ECR,2026,8/13,197,James Conner,RB,RB63,ARI,14,11,117,309,193.80,43.63,159,16447,https://www.fantasypros.com/nfl/players/james-conner.php
+standard,FantasyPros ECR,2026,8/13,198,Dontayvion Wicks,WR,WR72,PHI,10,11,138,274,207.94,31.88,264,24354,https://www.fantasypros.com/nfl/players/dontayvion-wicks.php
+standard,FantasyPros ECR,2026,8/13,199,Cam Little,K,K4,JAC,7,11,191,251,198.00,8.26,177,26475,https://www.fantasypros.com/nfl/players/cam-little.php
+standard,FantasyPros ECR,2026,8/13,200,Baltimore Ravens,DST,DST11,BAL,13,11,171,279,198.38,17.05,195,8020,https://www.fantasypros.com/nfl/players/baltimore-defense.php
+standard,FantasyPros ECR,2026,8/13,201,Jason Myers,K,K5,SEA,11,11,191,252,200.20,8.37,166,14003,https://www.fantasypros.com/nfl/players/jason-myers.php
+standard,FantasyPros ECR,2026,8/13,202,Rashod Bateman,WR,WR73,BAL,13,11,142,288,208.16,26.06,291,19794,https://www.fantasypros.com/nfl/players/rashod-bateman.php
+standard,FantasyPros ECR,2026,8/13,203,MarShawn Lloyd,RB,RB64,GB,11,11,127,316,207.87,53.03,235,23118,https://www.fantasypros.com/nfl/players/marshawn-lloyd.php
+standard,FantasyPros ECR,2026,8/13,204,Kaytron Allen,RB,RB65,WAS,7,11,145,320,202.96,36.56,202,24362,https://www.fantasypros.com/nfl/players/kaytron-allen.php
+standard,FantasyPros ECR,2026,8/13,205,Green Bay Packers,DST,DST12,GB,11,11,185,278,200.93,21.28,240,8110,https://www.fantasypros.com/nfl/players/green-bay-defense.php
+standard,FantasyPros ECR,2026,8/13,206,Jacoby Brissett,QB,QB27,ARI,14,11,136,307,213.86,38.63,213,15642,https://www.fantasypros.com/nfl/players/jacoby-brissett.php
+standard,FantasyPros ECR,2026,8/13,207,Isaac TeSlaa,WR,WR74,DET,6,11,153,287,202.17,24.56,223,27446,https://www.fantasypros.com/nfl/players/isaac-teslaa.php
+standard,FantasyPros ECR,2026,8/13,208,Troy Franklin,WR,WR75,DEN,10,11,132,339,204.86,37.40,257,23092,https://www.fantasypros.com/nfl/players/troy-franklin.php
+standard,FantasyPros ECR,2026,8/13,209,Tyler Loop,K,K6,BAL,13,11,197,251,210.07,8.85,185,27534,https://www.fantasypros.com/nfl/players/tyler-loop.php
+standard,FantasyPros ECR,2026,8/13,210,Eddy Pineiro,K,K7,SF,8,11,199,249,210.53,8.28,224,17575,https://www.fantasypros.com/nfl/players/eddy-pineiro.php
+standard,FantasyPros ECR,2026,8/13,211,Darnell Mooney,WR,WR76,NYG,8,11,139,271,208.49,21.97,255,19810,https://www.fantasypros.com/nfl/players/darnell-mooney.php
+standard,FantasyPros ECR,2026,8/13,212,Pat Bryant,WR,WR77,DEN,10,11,164,345,217.08,31.22,248,27211,https://www.fantasypros.com/nfl/players/pat-bryant.php
+standard,FantasyPros ECR,2026,8/13,213,Jaylin Noel,WR,WR78,HOU,8,11,153,314,212.70,30.90,279,27122,https://www.fantasypros.com/nfl/players/jaylin-noel.php
+standard,FantasyPros ECR,2026,8/13,214,T.J. Hockenson,TE,TE25,MIN,6,11,144,255,222.64,19.23,150,18290,https://www.fantasypros.com/nfl/players/tj-hockenson.php
+standard,FantasyPros ECR,2026,8/13,215,Kansas City Chiefs,DST,DST13,KC,5,11,182,278,211.47,16.20,260,8150,https://www.fantasypros.com/nfl/players/kansas-city-defense.php
+standard,FantasyPros ECR,2026,8/13,216,Malik Washington,WR,WR79,MIA,6,11,153,312,218.21,39.83,237,26314,https://www.fantasypros.com/nfl/players/malik-washington.php
+standard,FantasyPros ECR,2026,8/13,217,Jaydon Blue,RB,RB66,DAL,14,11,134,321,217.42,44.12,207,24344,https://www.fantasypros.com/nfl/players/jaydon-blue.php
+standard,FantasyPros ECR,2026,8/13,218,Tank Dell,WR,WR80,HOU,8,11,149,285,218.93,30.63,203,25361,https://www.fantasypros.com/nfl/players/nathaniel-dell.php
+standard,FantasyPros ECR,2026,8/13,219,Jaylen Wright,RB,RB67,MIA,6,11,148,282,215.38,28.73,221,25987,https://www.fantasypros.com/nfl/players/jaylen-wright.php
+standard,FantasyPros ECR,2026,8/13,220,Cairo Santos,K,K8,CHI,10,11,206,281,220.29,12.90,259,13731,https://www.fantasypros.com/nfl/players/cairo-santos.php
+standard,FantasyPros ECR,2026,8/13,221,Evan McPherson,K,K9,CIN,6,11,197,260,216.27,13.01,278,23297,https://www.fantasypros.com/nfl/players/evan-mcpherson.php
+standard,FantasyPros ECR,2026,8/13,222,Ollie Gordon II,RB,RB68,MIA,6,11,161,282,221.95,23.60,330,25984,https://www.fantasypros.com/nfl/players/ollie-gordon.php
+standard,FantasyPros ECR,2026,8/13,223,Detroit Lions,DST,DST14,DET,6,11,184,278,219.77,21.94,233,8100,https://www.fantasypros.com/nfl/players/detroit-defense.php
+standard,FantasyPros ECR,2026,8/13,224,Jake Bates,K,K10,DET,6,11,191,281,229.14,14.84,206,26075,https://www.fantasypros.com/nfl/players/jake-bates.php
+standard,FantasyPros ECR,2026,8/13,225,Andy Borregales,K,K11,NE,11,11,196,284,223.09,15.46,208,27291,https://www.fantasypros.com/nfl/players/andres-borregales.php
+standard,FantasyPros ECR,2026,8/13,226,Gunnar Helm,TE,TE26,TEN,9,11,157,287,236.65,23.94,183,27109,https://www.fantasypros.com/nfl/players/gunnar-helm.php
+standard,FantasyPros ECR,2026,8/13,227,Pat Freiermuth,TE,TE27,PIT,9,11,137,320,235.42,30.48,262,20163,https://www.fantasypros.com/nfl/players/pat-freiermuth.php
+standard,FantasyPros ECR,2026,8/13,228,Chase McLaughlin,K,K12,TB,10,11,210,281,228.61,15.92,246,19058,https://www.fantasypros.com/nfl/players/chase-mclaughlin.php
+standard,FantasyPros ECR,2026,8/13,229,Cleveland Browns,DST,DST15,CLE,11,11,175,316,211.69,31.17,296,8070,https://www.fantasypros.com/nfl/players/cleveland-defense.php
+standard,FantasyPros ECR,2026,8/13,230,Buffalo Bills,DST,DST16,BUF,7,11,189,337,228.00,23.08,263,8030,https://www.fantasypros.com/nfl/players/buffalo-defense.php
+standard,FantasyPros ECR,2026,8/13,231,Chimere Dike,WR,WR81,TEN,9,11,162,306,230.88,35.53,261,27315,https://www.fantasypros.com/nfl/players/chimere-dike.php
+standard,FantasyPros ECR,2026,8/13,232,Harrison Mevis,K,K13,LAR,11,11,196,281,235.42,20.31,193,26638,https://www.fantasypros.com/nfl/players/harrison-mevis.php
+standard,FantasyPros ECR,2026,8/13,233,Antonio Williams,WR,WR82,WAS,7,11,135,340,221.69,42.21,210,25418,https://www.fantasypros.com/nfl/players/antonio-williams-wr.php
+standard,FantasyPros ECR,2026,8/13,234,Geno Smith,QB,QB28,NYJ,13,11,152,315,243.89,34.19,239,11687,https://www.fantasypros.com/nfl/players/geno-smith.php
+standard,FantasyPros ECR,2026,8/13,235,Cooper Kupp,WR,WR83,SEA,11,11,168,306,236.13,30.40,266,16433,https://www.fantasypros.com/nfl/players/cooper-kupp.php
+standard,FantasyPros ECR,2026,8/13,236,Zachariah Branch,WR,WR84,ATL,11,11,164,322,236.91,29.84,217,25419,https://www.fantasypros.com/nfl/players/zachariah-branch.php
+standard,FantasyPros ECR,2026,8/13,237,Elic Ayomanor,WR,WR85,TEN,9,11,164,350,232.74,36.49,271,27059,https://www.fantasypros.com/nfl/players/elic-ayomanor.php
+standard,FantasyPros ECR,2026,8/13,238,David Njoku,TE,TE28,LAC,7,11,176,290,239.53,23.72,157,16399,https://www.fantasypros.com/nfl/players/david-njoku.php
+standard,FantasyPros ECR,2026,8/13,239,Greg Dulcich,TE,TE29,MIA,6,12,130,304,201.25,45.60,242,23153,https://www.fantasypros.com/nfl/players/greg-dulcich.php
+standard,FantasyPros ECR,2026,8/13,240,Aaron Rodgers,QB,QB29,PIT,9,12,152,343,241.11,40.59,232,9001,https://www.fantasypros.com/nfl/players/aaron-rodgers.php
+standard,FantasyPros ECR,2026,8/13,241,George Holani,RB,RB69,SEA,11,12,155,311,239.73,39.37,254,22915,https://www.fantasypros.com/nfl/players/george-holani.php
+standard,FantasyPros ECR,2026,8/13,242,Cade Otton,TE,TE30,TB,10,12,155,290,247.95,20.96,187,23181,https://www.fantasypros.com/nfl/players/cade-otton.php
+standard,FantasyPros ECR,2026,8/13,243,Harrison Butker,K,K14,KC,5,12,199,332,244.48,21.98,218,16712,https://www.fantasypros.com/nfl/players/harrison-butker.php
+standard,FantasyPros ECR,2026,8/13,244,Demond Claiborne,RB,RB70,MIN,6,12,159,329,234.56,35.03,220,28084,https://www.fantasypros.com/nfl/players/demond-claiborne.php
+standard,FantasyPros ECR,2026,8/13,245,Chris Boswell,K,K15,PIT,9,12,192,281,242.36,15.66,219,13029,https://www.fantasypros.com/nfl/players/chris-boswell.php
+standard,FantasyPros ECR,2026,8/13,246,Keon Coleman,WR,WR86,BUF,7,12,173,333,242.79,30.51,292,26019,https://www.fantasypros.com/nfl/players/keon-coleman.php
+standard,FantasyPros ECR,2026,8/13,247,Germie Bernard,WR,WR87,PIT,9,12,179,324,244.84,32.75,283,26039,https://www.fantasypros.com/nfl/players/germie-bernard.php
+standard,FantasyPros ECR,2026,8/13,248,Colby Parkinson,TE,TE31,LAR,11,12,180,351,254.71,23.72,194,19372,https://www.fantasypros.com/nfl/players/colby-parkinson.php
+standard,FantasyPros ECR,2026,8/13,249,Tory Horton,WR,WR88,SEA,11,12,199,322,248.89,24.89,273,26022,https://www.fantasypros.com/nfl/players/tory-horton.php
+standard,FantasyPros ECR,2026,8/13,250,Jordan James,RB,RB71,SF,8,12,155,369,253.60,39.38,268,27310,https://www.fantasypros.com/nfl/players/jordan-james.php
+standard,FantasyPros ECR,2026,8/13,251,Evan Engram,TE,TE32,DEN,10,12,189,308,262.56,21.44,290,16411,https://www.fantasypros.com/nfl/players/evan-engram.php
+standard,FantasyPros ECR,2026,8/13,252,Isaiah Davis,RB,RB72,NYJ,13,12,163,300,250.75,30.97,343,25977,https://www.fantasypros.com/nfl/players/isaiah-davis.php
+standard,FantasyPros ECR,2026,8/13,253,Malik Davis,RB,RB73,DAL,14,12,166,312,247.65,29.94,,24205,https://www.fantasypros.com/nfl/players/malik-davis.php
+standard,FantasyPros ECR,2026,8/13,254,Elijah Sarratt,WR,WR89,BAL,13,12,208,322,256.89,23.27,293,27463,https://www.fantasypros.com/nfl/players/elijah-sarratt.php
+standard,FantasyPros ECR,2026,8/13,255,Tyquan Thornton,WR,WR90,KC,5,12,153,361,257.21,35.09,,22913,https://www.fantasypros.com/nfl/players/tyquan-thornton.php
+standard,FantasyPros ECR,2026,8/13,256,Eli Stowers,TE,TE33,PHI,10,12,157,376,262.84,38.11,199,23144,https://www.fantasypros.com/nfl/players/eli-stowers.php
+standard,FantasyPros ECR,2026,8/13,257,Fernando Mendoza,QB,QB30,LV,13,12,178,345,268.82,34.40,211,28013,https://www.fantasypros.com/nfl/players/fernando-mendoza.php
+standard,FantasyPros ECR,2026,8/13,258,Kaelon Black,RB,RB74,SF,8,12,148,321,243.25,50.18,252,28401,https://www.fantasypros.com/nfl/players/kaelon-black.php
+standard,FantasyPros ECR,2026,8/13,259,Justice Hill,RB,RB75,BAL,13,12,159,312,258.01,41.14,231,18256,https://www.fantasypros.com/nfl/players/justice-hill.php
+standard,FantasyPros ECR,2026,8/13,260,Chris Brooks,RB,RB76,GB,11,12,167,306,260.60,31.11,334,25823,https://www.fantasypros.com/nfl/players/christopher-brooks.php
+standard,FantasyPros ECR,2026,8/13,261,Jack Bech,WR,WR91,LV,13,12,200,349,264.85,23.72,300,27224,https://www.fantasypros.com/nfl/players/jack-bech.php
+standard,FantasyPros ECR,2026,8/13,262,Ty Johnson,RB,RB77,BUF,7,12,163,359,258.26,34.27,256,18406,https://www.fantasypros.com/nfl/players/ty-johnson.php
+standard,FantasyPros ECR,2026,8/13,263,Theo Johnson,TE,TE34,NYG,8,12,195,324,265.97,25.62,227,23104,https://www.fantasypros.com/nfl/players/theo-johnson.php
+standard,FantasyPros ECR,2026,8/13,264,Christian Kirk,WR,WR92,SF,8,12,194,333,263.87,28.74,269,17268,https://www.fantasypros.com/nfl/players/christian-kirk.php
+standard,FantasyPros ECR,2026,8/13,265,Ted Hurst III,WR,WR93,TB,10,12,193,322,253.83,32.86,277,28130,https://www.fantasypros.com/nfl/players/ted-hurst.php
+standard,FantasyPros ECR,2026,8/13,266,Malachi Fields,WR,WR94,NYG,8,12,209,350,264.47,27.40,228,27994,https://www.fantasypros.com/nfl/players/malachi-fields.php
+standard,FantasyPros ECR,2026,8/13,267,DJ Giddens,RB,RB78,IND,13,12,222,328,268.49,22.07,338,27097,https://www.fantasypros.com/nfl/players/dj-giddens.php
+standard,FantasyPros ECR,2026,8/13,268,Darius Slayton,WR,WR95,NYG,8,12,179,361,266.90,30.08,,18706,https://www.fantasypros.com/nfl/players/darius-slayton.php
+standard,FantasyPros ECR,2026,8/13,269,Chris Bell,WR,WR96,MIA,6,12,172,317,261.24,30.57,295,26038,https://www.fantasypros.com/nfl/players/chris-bell.php
+standard,FantasyPros ECR,2026,8/13,270,Marvin Mims Jr.,WR,WR97,DEN,10,12,214,302,265.36,22.37,286,23080,https://www.fantasypros.com/nfl/players/marvin-mims.php
+standard,FantasyPros ECR,2026,8/13,271,Will Reichard,K,K16,MIN,6,12,199,332,255.51,30.12,236,26341,https://www.fantasypros.com/nfl/players/will-reichard.php
+standard,FantasyPros ECR,2026,8/13,272,Tua Tagovailoa,QB,QB31,ATL,11,12,146,346,278.16,34.16,238,19198,https://www.fantasypros.com/nfl/players/tua-tagovailoa.php
+standard,FantasyPros ECR,2026,8/13,273,Wil Lutz,K,K17,DEN,10,12,206,332,270.39,30.22,234,16026,https://www.fantasypros.com/nfl/players/wil-lutz.php
+standard,FantasyPros ECR,2026,8/13,274,Samaje Perine,RB,RB79,CIN,6,12,159,388,266.78,37.08,302,16423,https://www.fantasypros.com/nfl/players/samaje-perine.php
+standard,FantasyPros ECR,2026,8/13,275,Ja'Kobi Lane,WR,WR98,BAL,13,12,142,329,247.33,45.35,205,27337,https://www.fantasypros.com/nfl/players/jakobi-lane.php
+standard,FantasyPros ECR,2026,8/13,276,Trey Benson,RB,RB80,ARI,14,12,140,331,252.35,46.53,212,25388,https://www.fantasypros.com/nfl/players/trey-benson.php
+standard,FantasyPros ECR,2026,8/13,277,Mason Taylor,TE,TE35,NYJ,13,12,235,348,276.34,23.83,222,26005,https://www.fantasypros.com/nfl/players/mason-taylor.php
+standard,FantasyPros ECR,2026,8/13,278,Xavier Legette,WR,WR99,CAR,5,12,204,328,271.48,29.56,326,26136,https://www.fantasypros.com/nfl/players/xavier-legette.php
+standard,FantasyPros ECR,2026,8/13,279,Devin Neal,RB,RB81,NO,8,12,181,359,251.00,34.30,250,23682,https://www.fantasypros.com/nfl/players/devin-neal.php
+standard,FantasyPros ECR,2026,8/13,280,Atlanta Falcons,DST,DST17,ATL,11,12,189,355,261.16,32.20,309,8010,https://www.fantasypros.com/nfl/players/atlanta-defense.php
+standard,FantasyPros ECR,2026,8/13,281,Brandon Aiyuk,WR,WR100,SF,8,12,116,372,241.78,62.45,230,19252,https://www.fantasypros.com/nfl/players/brandon-aiyuk.php
+standard,FantasyPros ECR,2026,8/13,282,San Francisco 49ers,DST,DST18,SF,8,12,193,355,261.80,30.44,280,8270,https://www.fantasypros.com/nfl/players/san-francisco-defense.php
+standard,FantasyPros ECR,2026,8/13,283,Mike Gesicki,TE,TE36,CIN,6,12,195,347,266.71,28.26,307,17272,https://www.fantasypros.com/nfl/players/mike-gesicki.php
+standard,FantasyPros ECR,2026,8/13,284,Devaughn Vele,WR,WR101,NO,8,12,231,318,279.22,20.26,301,26409,https://www.fantasypros.com/nfl/players/devaughn-vele.php
+standard,FantasyPros ECR,2026,8/13,285,Emari Demercado,RB,RB82,KC,5,12,161,337,279.58,33.35,342,25654,https://www.fantasypros.com/nfl/players/emari-demercado.php
+standard,FantasyPros ECR,2026,8/13,286,Kaleb Johnson,RB,RB83,PIT,9,12,196,331,262.97,29.92,258,27165,https://www.fantasypros.com/nfl/players/kaleb-johnson-rb.php
+standard,FantasyPros ECR,2026,8/13,287,Kyle Williams,WR,WR102,NE,11,12,194,322,262.02,33.25,289,27487,https://www.fantasypros.com/nfl/players/kyle-williams-wr-2025.php
+standard,FantasyPros ECR,2026,8/13,288,Kendre Miller,RB,RB84,NO,8,12,145,365,266.20,40.16,265,24360,https://www.fantasypros.com/nfl/players/kendre-miller.php
+standard,FantasyPros ECR,2026,8/13,289,Devin Singletary,RB,RB85,NYG,8,12,155,317,278.22,26.66,285,18280,https://www.fantasypros.com/nfl/players/devin-singletary.php
+standard,FantasyPros ECR,2026,8/13,290,Adam Randall,RB,RB86,BAL,13,12,178,319,270.18,28.02,341,24367,https://www.fantasypros.com/nfl/players/adam-randall.php
+standard,FantasyPros ECR,2026,8/13,291,Keenan Allen,WR,WR103,LAC,7,13,169,302,269.34,27.35,284,11616,https://www.fantasypros.com/nfl/players/keenan-allen.php
+standard,FantasyPros ECR,2026,8/13,292,Oscar Delp,TE,TE37,NO,8,13,192,371,303.33,34.70,,25430,https://www.fantasypros.com/nfl/players/oscar-delp.php
+standard,FantasyPros ECR,2026,8/13,293,Michael Penix Jr.,QB,QB32,ATL,11,13,246,347,298.92,21.72,241,22973,https://www.fantasypros.com/nfl/players/michael-penix-jr.php
+standard,FantasyPros ECR,2026,8/13,294,Hollywood Brown,WR,WR104,PHI,10,13,235,346,284.11,19.98,299,18226,https://www.fantasypros.com/nfl/players/marquise-brown.php
+standard,FantasyPros ECR,2026,8/13,295,Seth McGowan,RB,RB87,IND,13,13,188,331,269.44,32.69,344,23079,https://www.fantasypros.com/nfl/players/seth-mcgowan.php
+standard,FantasyPros ECR,2026,8/13,296,Shedeur Sanders,QB,QB33,CLE,11,13,239,358,301.31,26.71,243,25968,https://www.fantasypros.com/nfl/players/shedeur-sanders.php
+standard,FantasyPros ECR,2026,8/13,297,Mack Hollins,WR,WR105,NE,11,13,209,384,276.37,33.14,,16489,https://www.fantasypros.com/nfl/players/mack-hollins.php
+standard,FantasyPros ECR,2026,8/13,298,Najee Harris,RB,RB88,LAC,7,13,196,321,266.21,28.98,253,19302,https://www.fantasypros.com/nfl/players/najee-harris-rb.php
+standard,FantasyPros ECR,2026,8/13,299,Kirk Cousins,QB,QB34,LV,13,13,238,349,300.77,26.48,247,11177,https://www.fantasypros.com/nfl/players/kirk-cousins.php
+standard,FantasyPros ECR,2026,8/13,300,Tyreek Hill,WR,WR106,FA,,13,138,378,255.42,51.01,192,15802,https://www.fantasypros.com/nfl/players/tyreek-hill.php
+standard,FantasyPros ECR,2026,8/13,301,LeQuint Allen Jr.,RB,RB89,JAC,7,13,240,388,296.19,23.57,298,27285,https://www.fantasypros.com/nfl/players/lequint-allen-jr.php
+standard,FantasyPros ECR,2026,8/13,302,Jake Tonges,TE,TE38,SF,8,13,157,341,274.67,35.02,229,24778,https://www.fantasypros.com/nfl/players/jake-tonges.php
+standard,FantasyPros ECR,2026,8/13,303,Deshaun Watson,QB,QB35,CLE,11,13,244,348,299.74,23.84,270,16398,https://www.fantasypros.com/nfl/players/deshaun-watson.php
+standard,FantasyPros ECR,2026,8/13,304,Brashard Smith,RB,RB90,KC,5,13,247,337,289.26,20.52,267,27259,https://www.fantasypros.com/nfl/players/brashard-smith.php
+standard,FantasyPros ECR,2026,8/13,305,Skyler Bell,WR,WR107,BUF,7,13,205,378,283.65,31.93,335,28126,https://www.fantasypros.com/nfl/players/skyler-bell.php
+standard,FantasyPros ECR,2026,8/13,306,Caleb Douglas,WR,WR108,MIA,6,13,153,375,271.00,53.15,314,28135,https://www.fantasypros.com/nfl/players/caleb-douglas.php
+standard,FantasyPros ECR,2026,8/13,307,Jerome Ford,RB,RB91,WAS,7,13,188,325,287.48,25.65,336,22921,https://www.fantasypros.com/nfl/players/jerome-ford.php
+standard,FantasyPros ECR,2026,8/13,308,Isaiah Bond,WR,WR109,CLE,11,13,238,370,290.68,25.01,,24371,https://www.fantasypros.com/nfl/players/isaiah-bond.php
+standard,FantasyPros ECR,2026,8/13,309,Charlie Smyth,K,K18,NO,8,13,211,332,280.41,36.85,322,26444,https://www.fantasypros.com/nfl/players/charlie-smyth.php
+standard,FantasyPros ECR,2026,8/13,310,New Orleans Saints,DST,DST19,NO,8,13,185,355,272.62,43.32,319,8190,https://www.fantasypros.com/nfl/players/new-orleans-defense.php
+standard,FantasyPros ECR,2026,8/13,311,Indianapolis Colts,DST,DST20,IND,13,13,187,355,276.02,36.22,306,8130,https://www.fantasypros.com/nfl/players/indianapolis-defense.php
+standard,FantasyPros ECR,2026,8/13,312,Isaac Guerendo,RB,RB92,SF,8,13,221,366,286.48,27.99,,26392,https://www.fantasypros.com/nfl/players/isaac-guerendo.php
+standard,FantasyPros ECR,2026,8/13,313,Trevor Etienne,RB,RB93,CAR,5,13,242,325,296.09,20.09,,25393,https://www.fantasypros.com/nfl/players/trevor-etienne.php
+standard,FantasyPros ECR,2026,8/13,314,Andrei Iosivas,WR,WR110,CIN,6,13,201,358,278.45,29.15,303,25335,https://www.fantasypros.com/nfl/players/andrei-iosivas.php
+standard,FantasyPros ECR,2026,8/13,315,Cyrus Allen,WR,WR111,KC,5,13,165,377,250.39,53.47,288,28424,https://www.fantasypros.com/nfl/players/cyrus-allen.php
+standard,FantasyPros ECR,2026,8/13,316,Tahj Brooks,RB,RB94,CIN,6,13,259,375,304.81,19.69,,26212,https://www.fantasypros.com/nfl/players/tahj-brooks.php
+standard,FantasyPros ECR,2026,8/13,317,Darnell Washington,TE,TE39,PIT,9,13,211,376,293.70,29.98,310,22967,https://www.fantasypros.com/nfl/players/darnell-washington.php
+standard,FantasyPros ECR,2026,8/13,318,Jarquez Hunter,RB,RB95,LAR,11,13,259,392,313.09,23.71,282,24335,https://www.fantasypros.com/nfl/players/jarquez-hunter.php
+standard,FantasyPros ECR,2026,8/13,319,Chicago Bears,DST,DST21,CHI,10,13,189,342,267.00,42.93,287,8050,https://www.fantasypros.com/nfl/players/chicago-defense.php
+standard,FantasyPros ECR,2026,8/13,320,Jaleel McLaughlin,RB,RB96,DEN,10,13,247,357,308.20,23.59,,25876,https://www.fantasypros.com/nfl/players/jaleel-mclaughlin.php
+standard,FantasyPros ECR,2026,8/13,321,Audric Estime,RB,RB97,NO,8,13,257,357,313.63,18.13,276,23054,https://www.fantasypros.com/nfl/players/audric-estime.php
+standard,FantasyPros ECR,2026,8/13,322,Luke McCaffrey,WR,WR112,WAS,7,13,246,350,301.24,24.24,,26328,https://www.fantasypros.com/nfl/players/luke-mccaffrey.php
+standard,FantasyPros ECR,2026,8/13,323,Cedric Tillman,WR,WR113,CLE,11,13,249,377,303.87,26.22,,25287,https://www.fantasypros.com/nfl/players/cedric-tillman.php
+standard,FantasyPros ECR,2026,8/13,324,Jalen Tolbert,WR,WR114,MIA,6,13,191,373,302.78,43.52,272,23770,https://www.fantasypros.com/nfl/players/jalen-tolbert.php
+standard,FantasyPros ECR,2026,8/13,325,Konata Mumpfield,WR,WR115,LAR,11,13,231,370,297.83,30.29,,27449,https://www.fantasypros.com/nfl/players/konata-mumpfield.php
+standard,FantasyPros ECR,2026,8/13,326,Chris Brazzell II,WR,WR116,CAR,5,13,209,368,285.26,36.25,,28047,https://www.fantasypros.com/nfl/players/chris-brazzell-ii.php
+standard,FantasyPros ECR,2026,8/13,327,Tez Johnson,WR,WR117,TB,10,13,241,375,298.23,30.30,,27147,https://www.fantasypros.com/nfl/players/tez-johnson.php
+standard,FantasyPros ECR,2026,8/13,328,Will Shipley,RB,RB98,PHI,10,13,256,369,320.48,21.97,,22930,https://www.fantasypros.com/nfl/players/will-shipley.php
+standard,FantasyPros ECR,2026,8/13,329,Calvin Austin III,WR,WR118,NYG,8,13,261,379,307.27,32.86,,23739,https://www.fantasypros.com/nfl/players/calvin-austin.php
+standard,FantasyPros ECR,2026,8/13,330,J.J. McCarthy,QB,QB36,MIN,6,13,284,364,323.76,18.89,274,23018,https://www.fantasypros.com/nfl/players/jj-mccarthy.php
+standard,FantasyPros ECR,2026,8/13,331,Kareem Hunt,RB,RB99,FA,,13,286,368,317.32,15.35,294,16425,https://www.fantasypros.com/nfl/players/kareem-hunt.php
+standard,FantasyPros ECR,2026,8/13,332,Max Klare,TE,TE40,LAR,11,13,262,366,311.73,25.97,304,27993,https://www.fantasypros.com/nfl/players/max-klare.php
+standard,FantasyPros ECR,2026,8/13,333,Michael Mayer,TE,TE41,LV,13,14,248,376,318.26,28.93,323,23056,https://www.fantasypros.com/nfl/players/michael-mayer.php
+standard,FantasyPros ECR,2026,8/13,334,Tyler Higbee,TE,TE42,LAR,11,14,229,354,308.12,28.86,320,15623,https://www.fantasypros.com/nfl/players/tyler-higbee.php
+standard,FantasyPros ECR,2026,8/13,335,Joe Mixon,RB,RB100,FA,,14,227,357,299.74,31.19,244,16420,https://www.fantasypros.com/nfl/players/joe-mixon.php
+standard,FantasyPros ECR,2026,8/13,336,Elijah Arroyo,TE,TE43,SEA,11,14,255,363,312.62,24.07,,23004,https://www.fantasypros.com/nfl/players/elijah-arroyo.php
+standard,FantasyPros ECR,2026,8/13,337,Cole Kmet,TE,TE44,CHI,10,14,255,359,319.03,25.19,,19229,https://www.fantasypros.com/nfl/players/cole-kmet.php
+standard,FantasyPros ECR,2026,8/13,338,Jahan Dotson,WR,WR119,ATL,11,14,204,376,309.75,36.36,332,23101,https://www.fantasypros.com/nfl/players/jahan-dotson.php
+standard,FantasyPros ECR,2026,8/13,339,Jalen Royals,WR,WR120,KC,5,14,251,372,315.47,25.17,,27076,https://www.fantasypros.com/nfl/players/jalen-royals.php
+standard,FantasyPros ECR,2026,8/13,340,DeMario Douglas,WR,WR121,NE,11,14,203,392,316.03,40.81,,25304,https://www.fantasypros.com/nfl/players/demario-douglas.php
+standard,FantasyPros ECR,2026,8/13,341,Noah Gray,TE,TE45,KC,5,14,225,371,321.41,28.96,,19539,https://www.fantasypros.com/nfl/players/noah-gray.php
+standard,FantasyPros ECR,2026,8/13,342,Ja'Tavion Sanders,TE,TE46,CAR,5,14,222,376,318.59,37.91,339,24334,https://www.fantasypros.com/nfl/players/jatavion-sanders.php
+standard,FantasyPros ECR,2026,8/13,343,Olamide Zaccheaus,WR,WR122,ATL,11,14,253,372,321.24,31.58,,18864,https://www.fantasypros.com/nfl/players/olamide-zaccheaus.php
+standard,FantasyPros ECR,2026,8/13,344,Carson Beck,QB,QB37,ARI,14,14,284,380,327.11,22.77,281,22953,https://www.fantasypros.com/nfl/players/carson-beck.php
+standard,FantasyPros ECR,2026,8/13,345,Mac Jones,QB,QB38,SF,8,14,302,385,336.21,21.25,,20156,https://www.fantasypros.com/nfl/players/mac-jones.php
+standard,FantasyPros ECR,2026,8/13,346,Treylon Burks,WR,WR123,WAS,7,14,198,377,315.00,44.75,,22905,https://www.fantasypros.com/nfl/players/treylon-burks.php
+standard,FantasyPros ECR,2026,8/13,347,Dawson Knox,TE,TE47,BUF,7,14,252,362,324.10,30.43,,18631,https://www.fantasypros.com/nfl/players/dawson-knox.php
+standard,FantasyPros ECR,2026,8/13,348,Joshua Palmer,WR,WR124,BUF,7,14,217,373,310.42,35.96,,22845,https://www.fantasypros.com/nfl/players/josh-palmer.php
+standard,FantasyPros ECR,2026,8/13,349,Dallas Cowboys,DST,DST22,DAL,14,14,185,350,242.08,54.03,245,8080,https://www.fantasypros.com/nfl/players/dallas-defense.php
+standard,FantasyPros ECR,2026,8/13,350,Eli Raridon,TE,TE48,NE,11,14,260,374,323.22,33.27,340,28154,https://www.fantasypros.com/nfl/players/eli-raridon.php
+standard,FantasyPros ECR,2026,8/13,351,Brenen Thompson,WR,WR125,LAC,7,14,244,377,307.68,36.97,337,28133,https://www.fantasypros.com/nfl/players/brenen-thompson.php
+standard,FantasyPros ECR,2026,8/13,352,Michael Carter,RB,RB101,TEN,9,14,286,365,315.96,21.40,,22728,https://www.fantasypros.com/nfl/players/michael-carter-rb.php
+standard,FantasyPros ECR,2026,8/13,353,Bam Knight,RB,RB102,ARI,14,14,286,382,322.35,25.78,,24901,https://www.fantasypros.com/nfl/players/zonovan-bam-knight.php
+standard,FantasyPros ECR,2026,8/13,354,Carolina Panthers,DST,DST23,CAR,5,14,219,354,294.79,38.48,313,8040,https://www.fantasypros.com/nfl/players/carolina-defense.php
+standard,FantasyPros ECR,2026,8/13,355,Ty Simpson,QB,QB39,LAR,11,14,289,387,340.31,26.38,324,25368,https://www.fantasypros.com/nfl/players/ty-simpson.php
+standard,FantasyPros ECR,2026,8/13,356,Justin Joly,TE,TE49,DEN,10,14,263,380,330.30,29.14,,28079,https://www.fantasypros.com/nfl/players/justin-joly.php
+standard,FantasyPros ECR,2026,8/13,357,Bryce Lance,WR,WR126,NO,8,14,278,373,327.73,28.13,,28129,https://www.fantasypros.com/nfl/players/bryce-lance.php
+standard,FantasyPros ECR,2026,8/13,358,Erick All Jr.,TE,TE50,CIN,6,14,255,389,327.92,34.56,,23837,https://www.fantasypros.com/nfl/players/erick-all.php
+standard,FantasyPros ECR,2026,8/13,359,Kendrick Bourne,WR,WR127,ARI,14,14,238,375,312.52,44.26,,17066,https://www.fantasypros.com/nfl/players/kendrick-bourne.php
+standard,FantasyPros ECR,2026,8/13,360,Justin Fields,QB,QB40,KC,5,14,293,386,343.94,24.35,,19781,https://www.fantasypros.com/nfl/players/justin-fields.php
+standard,FantasyPros ECR,2026,8/13,361,Eli Heidenreich,RB,RB103,PIT,9,14,269,386,326.57,32.61,,28297,https://www.fantasypros.com/nfl/players/eli-heidenreich.php
+standard,FantasyPros ECR,2026,8/13,362,Dont'e Thornton Jr.,WR,WR128,LV,13,14,271,372,311.63,29.73,,27288,https://www.fantasypros.com/nfl/players/donte-thornton-jr.php
+standard,FantasyPros ECR,2026,8/13,363,Tyler Bass,K,K19,BUF,7,14,224,332,268.58,32.91,311,19760,https://www.fantasypros.com/nfl/players/tyler-bass.php
+standard,FantasyPros ECR,2026,8/13,364,Jaylin Lane,WR,WR129,WAS,7,14,294,382,336.48,26.42,,27454,https://www.fantasypros.com/nfl/players/jaylin-lane.php
+standard,FantasyPros ECR,2026,8/13,365,Cincinnati Bengals,DST,DST24,CIN,6,14,211,355,247.67,49.67,315,8060,https://www.fantasypros.com/nfl/players/cincinnati-defense.php
+standard,FantasyPros ECR,2026,8/13,366,Nick Chubb,RB,RB104,FA,,14,301,382,328.42,21.95,,17246,https://www.fantasypros.com/nfl/players/nick-chubb.php
+standard,FantasyPros ECR,2026,8/13,367,Jake Elliott,K,K20,PHI,10,14,239,320,288.00,27.98,297,16540,https://www.fantasypros.com/nfl/players/jake-elliott.php
+standard,FantasyPros ECR,2026,8/13,368,Tampa Bay Buccaneers,DST,DST25,TB,10,14,205,355,254.44,44.86,312,8290,https://www.fantasypros.com/nfl/players/tampa-bay-defense.php
+standard,FantasyPros ECR,2026,8/13,369,John Metchie III,WR,WR130,CAR,5,14,248,395,330.05,38.25,,22895,https://www.fantasypros.com/nfl/players/john-metchie.php
+standard,FantasyPros ECR,2026,8/13,370,New York Giants,DST,DST26,NYG,8,14,219,353,269.90,33.58,251,8200,https://www.fantasypros.com/nfl/players/new-york-giants-defense.php
+standard,FantasyPros ECR,2026,8/13,371,Xavier Hutchinson,WR,WR131,HOU,8,14,249,395,334.10,32.92,,25332,https://www.fantasypros.com/nfl/players/xavier-hutchinson.php
+standard,FantasyPros ECR,2026,8/13,372,Jawhar Jordan,RB,RB105,HOU,8,14,283,364,327.39,24.62,,26329,https://www.fantasypros.com/nfl/players/jawhar-jordan.php
+standard,FantasyPros ECR,2026,8/13,373,Raheim Sanders,RB,RB106,CLE,11,14,277,365,320.25,29.44,,24351,https://www.fantasypros.com/nfl/players/raheim-sanders.php
+standard,FantasyPros ECR,2026,8/13,374,Tutu Atwell,WR,WR132,MIA,6,14,266,378,335.47,33.76,316,20126,https://www.fantasypros.com/nfl/players/tutu-atwell.php
+standard,FantasyPros ECR,2026,8/13,375,Savion Williams,WR,WR133,GB,11,14,298,372,336.89,23.68,,27144,https://www.fantasypros.com/nfl/players/savion-williams.php
+standard,FantasyPros ECR,2026,8/13,376,J'Mari Taylor,RB,RB107,JAC,7,14,291,392,323.07,24.91,,28109,https://www.fantasypros.com/nfl/players/jmari-taylor.php
+standard,FantasyPros ECR,2026,8/13,377,Noah Fant,TE,TE51,NO,8,14,287,381,343.50,30.22,,17527,https://www.fantasypros.com/nfl/players/noah-fant.php
+standard,FantasyPros ECR,2026,8/13,378,Anthony Richardson Sr.,QB,QB41,IND,13,14,315,387,351.35,23.68,,24347,https://www.fantasypros.com/nfl/players/anthony-richardson.php
+standard,FantasyPros ECR,2026,8/13,379,KaVontae Turpin,WR,WR134,DAL,14,14,257,396,319.92,45.86,,18520,https://www.fantasypros.com/nfl/players/kavontae-turpin.php
+standard,FantasyPros ECR,2026,8/13,380,Kevin Coleman Jr.,WR,WR135,MIA,6,14,269,379,330.60,37.90,,28067,https://www.fantasypros.com/nfl/players/kevin-coleman-jr.php
+standard,FantasyPros ECR,2026,8/13,381,Luke Musgrave,TE,TE52,GB,11,14,290,383,348.84,25.66,,25282,https://www.fantasypros.com/nfl/players/luke-musgrave.php
+standard,FantasyPros ECR,2026,8/13,382,Trey Smack,K,K21,GB,11,14,216,277,252.00,20.52,308,28507,https://www.fantasypros.com/nfl/players/trey-smack.php
+standard,FantasyPros ECR,2026,8/13,383,Darren Waller,TE,TE53,CAR,5,14,195,379,320.82,51.95,,14104,https://www.fantasypros.com/nfl/players/darren-waller.php
+standard,FantasyPros ECR,2026,8/13,384,Kalif Raymond,WR,WR136,CHI,10,14,288,395,336.85,32.62,,16081,https://www.fantasypros.com/nfl/players/kalif-raymond.php
+standard,FantasyPros ECR,2026,8/13,385,Ben Sinnott,TE,TE54,WAS,7,14,325,382,350.19,15.21,,26310,https://www.fantasypros.com/nfl/players/ben-sinnott.php
+standard,FantasyPros ECR,2026,8/13,386,Joe Flacco,QB,QB42,CIN,6,14,305,395,347.13,27.82,,9300,https://www.fantasypros.com/nfl/players/joe-flacco.php
+standard,FantasyPros ECR,2026,8/13,387,Austin Ekeler,RB,RB108,FA,,14,304,368,334.58,16.81,275,16483,https://www.fantasypros.com/nfl/players/austin-ekeler.php
+standard,FantasyPros ECR,2026,8/13,388,Mitchell Evans,TE,TE55,CAR,5,14,288,384,351.63,22.28,,27138,https://www.fantasypros.com/nfl/players/mitchell-evans.php
+standard,FantasyPros ECR,2026,8/13,389,Tommy Tremble,TE,TE56,CAR,5,14,290,389,345.57,30.17,,22795,https://www.fantasypros.com/nfl/players/tommy-tremble.php
+standard,FantasyPros ECR,2026,8/13,390,Charlie Kolar,TE,TE57,LAC,7,14,256,366,324.70,33.81,,22756,https://www.fantasypros.com/nfl/players/charlie-kolar.php
+standard,FantasyPros ECR,2026,8/13,391,Zavion Thomas,WR,WR137,CHI,10,15,264,383,333.91,40.31,,28132,https://www.fantasypros.com/nfl/players/zavion-thomas.php
+standard,FantasyPros ECR,2026,8/13,392,Zane Gonzalez,K,K22,MIA,6,15,213,332,310.38,37.04,,16548,https://www.fantasypros.com/nfl/players/zane-gonzalez.php
+standard,FantasyPros ECR,2026,8/13,393,Ashton Dulin,WR,WR138,IND,13,15,276,340,305.00,21.37,,18656,https://www.fantasypros.com/nfl/players/ashton-dulin.php
+standard,FantasyPros ECR,2026,8/13,394,Nick Westbrook-Ikhine,WR,WR139,IND,13,15,263,384,343.92,37.08,,19747,https://www.fantasypros.com/nfl/players/nick-westbrook.php
+standard,FantasyPros ECR,2026,8/13,395,John Bates,TE,TE58,WAS,7,15,267,389,317.13,36.52,,22833,https://www.fantasypros.com/nfl/players/john-bates.php
+standard,FantasyPros ECR,2026,8/13,396,Dameon Pierce,RB,RB109,PHI,10,15,309,364,333.50,17.40,,22947,https://www.fantasypros.com/nfl/players/dameon-pierce.php
+standard,FantasyPros ECR,2026,8/13,397,Nick Folk,K,K23,ATL,11,15,230,250,240.25,8.84,325,9491,https://www.fantasypros.com/nfl/players/nick-folk.php
+standard,FantasyPros ECR,2026,8/13,398,Phil Mafah,RB,RB110,DAL,14,15,277,393,328.22,40.34,,22928,https://www.fantasypros.com/nfl/players/phil-mafah.php
+standard,FantasyPros ECR,2026,8/13,399,Jake Moody,K,K24,WAS,7,15,249,332,279.00,29.82,,24009,https://www.fantasypros.com/nfl/players/jake-moody.php
+standard,FantasyPros ECR,2026,8/13,400,Daniel Bellinger,TE,TE59,TEN,9,15,301,382,343.10,29.48,,24238,https://www.fantasypros.com/nfl/players/daniel-bellinger.php
+standard,FantasyPros ECR,2026,8/13,401,Damien Martinez,RB,RB111,GB,11,15,309,380,338.00,21.86,,25976,https://www.fantasypros.com/nfl/players/damien-martinez.php
+standard,FantasyPros ECR,2026,8/13,402,Dyami Brown,WR,WR140,WAS,7,15,300,396,339.56,32.87,,20113,https://www.fantasypros.com/nfl/players/dyami-brown.php
+standard,FantasyPros ECR,2026,8/13,403,Tennessee Titans,DST,DST27,TEN,9,15,211,355,293.80,57.42,327,8300,https://www.fantasypros.com/nfl/players/tennessee-defense.php
+standard,FantasyPros ECR,2026,8/13,404,Malik Benson,WR,WR141,LV,13,15,236,363,294.60,55.74,,26012,https://www.fantasypros.com/nfl/players/malik-benson.php
+standard,FantasyPros ECR,2026,8/13,405,Jam Miller,RB,RB112,NE,11,15,282,386,333.63,32.00,,27326,https://www.fantasypros.com/nfl/players/jam-miller.php
+standard,FantasyPros ECR,2026,8/13,406,Marcus Mariota,QB,QB43,WAS,7,15,323,393,342.11,22.00,,13890,https://www.fantasypros.com/nfl/players/marcus-mariota.php
+standard,FantasyPros ECR,2026,8/13,407,Roschon Johnson,RB,RB113,CHI,10,15,316,386,335.63,19.92,,25322,https://www.fantasypros.com/nfl/players/roschon-johnson.php
+standard,FantasyPros ECR,2026,8/13,408,Devontez Walker,WR,WR142,BAL,13,15,288,384,336.00,31.65,,26011,https://www.fantasypros.com/nfl/players/devontez-walker.php
+standard,FantasyPros ECR,2026,8/13,409,Rasheen Ali,RB,RB114,BAL,13,15,300,359,327.43,20.11,,25983,https://www.fantasypros.com/nfl/players/rasheen-ali.php
+standard,FantasyPros ECR,2026,8/13,410,CJ Daniels,WR,WR143,LAR,11,15,317,390,360.62,24.97,,28125,https://www.fantasypros.com/nfl/players/cj-daniels.php
+standard,FantasyPros ECR,2026,8/13,411,Blake Grupe,K,K25,IND,13,15,215,281,240.00,29.22,,25533,https://www.fantasypros.com/nfl/players/blake-grupe.php
+standard,FantasyPros ECR,2026,8/13,412,Miami Dolphins,DST,DST28,MIA,6,15,187,343,304.00,58.86,333,8160,https://www.fantasypros.com/nfl/players/miami-defense.php
+standard,FantasyPros ECR,2026,8/13,413,Jordan Whittington,WR,WR144,LAR,11,15,305,393,341.50,28.83,,23135,https://www.fantasypros.com/nfl/players/jordan-whittington.php
+standard,FantasyPros ECR,2026,8/13,414,Tommy Myers,TE,TE60,FA,,15,245,391,285.50,61.00,,25167,https://www.fantasypros.com/nfl/players/tommy-myers.php
+standard,FantasyPros ECR,2026,8/13,415,Jameis Winston,QB,QB44,NYG,8,15,323,376,348.89,19.27,,13891,https://www.fantasypros.com/nfl/players/jameis-winston.php
+standard,FantasyPros ECR,2026,8/13,416,Terrell Jennings,RB,RB115,NE,11,15,309,357,328.33,15.77,,26964,https://www.fantasypros.com/nfl/players/terrell-jennings.php
+standard,FantasyPros ECR,2026,8/13,417,Kyle Juszczyk,RB,RB116,SF,8,15,250,379,338.43,46.93,,11798,https://www.fantasypros.com/nfl/players/kyle-juszczyk.php
+standard,FantasyPros ECR,2026,8/13,418,Marlin Klein,TE,TE61,HOU,8,15,208,356,296.75,58.49,,28157,https://www.fantasypros.com/nfl/players/marlin-klein.php
+standard,FantasyPros ECR,2026,8/13,419,Austin Hooper,TE,TE62,ATL,11,15,309,392,348.00,29.77,,15581,https://www.fantasypros.com/nfl/players/austin-hooper.php
+standard,FantasyPros ECR,2026,8/13,420,Deion Burks,WR,WR145,IND,13,15,296,396,352.25,36.09,,27093,https://www.fantasypros.com/nfl/players/deion-burks.php
+standard,FantasyPros ECR,2026,8/13,421,Joe Milton III,QB,QB45,DAL,14,15,326,397,357.89,25.35,,25967,https://www.fantasypros.com/nfl/players/joe-milton.php
+standard,FantasyPros ECR,2026,8/13,422,Las Vegas Raiders,DST,DST29,LV,13,15,160,279,219.50,59.50,329,8220,https://www.fantasypros.com/nfl/players/las-vegas-defense.php
+standard,FantasyPros ECR,2026,8/13,423,Roman Wilson,WR,WR146,PIT,9,15,287,365,327.40,30.10,,28896,https://www.fantasypros.com/nfl/players/roman-wilson-wr.php
+standard,FantasyPros ECR,2026,8/13,424,Joey Slye,K,K26,TEN,9,15,236,328,281.67,37.56,,19028,https://www.fantasypros.com/nfl/players/joey-slye.php
+standard,FantasyPros ECR,2026,8/13,425,Jeremy McNichols,RB,RB117,WAS,7,15,243,388,328.20,54.59,,16445,https://www.fantasypros.com/nfl/players/jeremy-mcnichols.php
+standard,FantasyPros ECR,2026,8/13,426,Will Kacmarek,TE,TE63,MIA,6,15,290,320,311.75,12.58,,28403,https://www.fantasypros.com/nfl/players/will-kacmarek.php
+standard,FantasyPros ECR,2026,8/13,427,Cade Klubnik,QB,QB46,NYJ,13,15,302,365,329.60,24.04,,24361,https://www.fantasypros.com/nfl/players/cade-klubnik.php
+standard,FantasyPros ECR,2026,8/13,428,Demarcus Robinson,WR,WR147,SF,8,15,303,379,341.50,34.98,,15665,https://www.fantasypros.com/nfl/players/demarcus-robinson.php
+standard,FantasyPros ECR,2026,8/13,429,Daniel Carlson,K,K27,LV,13,15,245,311,286.00,29.22,,17420,https://www.fantasypros.com/nfl/players/daniel-carlson.php
+standard,FantasyPros ECR,2026,8/13,430,Chad Ryland,K,K28,ARI,14,15,211,332,286.67,53.85,,25354,https://www.fantasypros.com/nfl/players/chad-ryland.php
+standard,FantasyPros ECR,2026,8/13,431,Sione Vaki,RB,RB118,DET,6,15,312,382,334.00,26.20,,26309,https://www.fantasypros.com/nfl/players/sione-vaki.php
+standard,FantasyPros ECR,2026,8/13,432,Zach Ertz,TE,TE64,FA,,15,305,394,352.71,24.16,,11689,https://www.fantasypros.com/nfl/players/zach-ertz.php
+standard,FantasyPros ECR,2026,8/13,433,Greg Dortch,WR,WR148,DET,6,15,275,384,334.80,38.25,,18585,https://www.fantasypros.com/nfl/players/greg-dortch.php
+standard,FantasyPros ECR,2026,8/13,434,Tyler Goodson,RB,RB119,ATL,11,15,303,393,337.40,32.54,,22976,https://www.fantasypros.com/nfl/players/tyler-goodson.php
+standard,FantasyPros ECR,2026,8/13,435,Zavier Scott,RB,RB120,MIN,6,15,309,388,347.50,29.94,,25748,https://www.fantasypros.com/nfl/players/zavier-scott.php
+standard,FantasyPros ECR,2026,8/13,436,Taysom Hill,TE,TE65,FA,,15,195,324,259.50,64.50,,17115,https://www.fantasypros.com/nfl/players/taysom-hill.php
+standard,FantasyPros ECR,2026,8/13,437,Brandon McManus,K,K29,FA,,15,222,316,269.00,47.00,,13274,https://www.fantasypros.com/nfl/players/brandon-mcmanus.php
+standard,FantasyPros ECR,2026,8/13,438,Nate Boerkircher,TE,TE66,JAC,7,15,285,390,333.75,41.91,,28427,https://www.fantasypros.com/nfl/players/nate-boerkircher.php
+standard,FantasyPros ECR,2026,8/13,439,Ben Sauls,K,K30,NYG,8,15,275,279,277.00,2.00,,27798,https://www.fantasypros.com/nfl/players/ben-sauls.php
+standard,FantasyPros ECR,2026,8/13,440,Jonnu Smith,TE,TE67,FA,,15,294,389,350.00,36.12,,16460,https://www.fantasypros.com/nfl/players/jonnu-smith.php
+standard,FantasyPros ECR,2026,8/13,441,Xavier Restrepo,WR,WR149,TEN,9,15,291,334,319.33,20.04,,27066,https://www.fantasypros.com/nfl/players/xavier-restrepo.php
+standard,FantasyPros ECR,2026,8/13,442,Theo Wease Jr.,WR,WR150,MIA,6,15,246,384,322.33,57.28,,27222,https://www.fantasypros.com/nfl/players/theo-wease-jr.php
+standard,FantasyPros ECR,2026,8/13,443,Colbie Young,WR,WR151,CIN,6,15,295,370,326.00,31.97,,26037,https://www.fantasypros.com/nfl/players/colbie-young.php
+standard,FantasyPros ECR,2026,8/13,444,Jahdae Walker,WR,WR152,CHI,10,15,309,343,326.33,13.89,,27810,https://www.fantasypros.com/nfl/players/jahdae-walker.php
+standard,FantasyPros ECR,2026,8/13,445,Mitch Tinsley,WR,WR153,CIN,6,15,271,311,291.00,20.00,,24370,https://www.fantasypros.com/nfl/players/mitchell-tinsley.php
+standard,FantasyPros ECR,2026,8/13,446,Odell Beckham Jr.,WR,WR154,NYG,8,15,302,367,327.67,28.24,,12127,https://www.fantasypros.com/nfl/players/odell-beckham.php
+standard,FantasyPros ECR,2026,8/13,447,Robert Henry Jr.,RB,RB121,WAS,7,15,326,364,345.50,18.51,,28404,https://www.fantasypros.com/nfl/players/robert-henry-jr.php
+standard,FantasyPros ECR,2026,8/13,448,Tai Felton,WR,WR155,MIN,6,15,289,369,331.00,32.78,,27182,https://www.fantasypros.com/nfl/players/tai-felton.php
+standard,FantasyPros ECR,2026,8/13,449,Xavier Smith,WR,WR156,LAR,11,15,295,302,298.50,3.50,,25627,https://www.fantasypros.com/nfl/players/xavier-smith.php
+standard,FantasyPros ECR,2026,8/13,450,Ty Chandler,RB,RB122,NO,8,15,312,369,332.33,25.98,,19471,https://www.fantasypros.com/nfl/players/ty-chandler.php
+standard,FantasyPros ECR,2026,8/13,451,Jackson Hawes,TE,TE68,BUF,7,15,356,391,367.17,11.85,,27469,https://www.fantasypros.com/nfl/players/jackson-hawes.php
+standard,FantasyPros ECR,2026,8/13,452,Riley Leonard,QB,QB47,IND,13,15,315,387,361.40,28.47,,25373,https://www.fantasypros.com/nfl/players/riley-leonard.php
+standard,FantasyPros ECR,2026,8/13,453,Brandin Cooks,WR,WR157,FA,,15,287,341,314.00,27.00,,12122,https://www.fantasypros.com/nfl/players/brandin-cooks.php
+standard,FantasyPros ECR,2026,8/13,454,Antonio Gibson,RB,RB123,FA,,15,323,369,342.67,19.36,,19624,https://www.fantasypros.com/nfl/players/antonio-gibson.php
+standard,FantasyPros ECR,2026,8/13,455,Adam Trautman,TE,TE69,DEN,10,15,305,391,356.50,32.21,,19423,https://www.fantasypros.com/nfl/players/adam-trautman.php
+standard,FantasyPros ECR,2026,8/13,456,Tanner Koziol,TE,TE70,JAC,7,15,351,384,367.00,11.14,,27499,https://www.fantasypros.com/nfl/players/tanner-koziol.php
+standard,FantasyPros ECR,2026,8/13,457,Mo Alie-Cox,TE,TE71,IND,13,15,298,389,347.00,37.48,,16579,https://www.fantasypros.com/nfl/players/mo-alie-cox.php
+standard,FantasyPros ECR,2026,8/13,458,Dylan Laube,RB,RB124,LV,13,16,296,353,324.50,28.50,,26194,https://www.fantasypros.com/nfl/players/dylan-laube.php
+standard,FantasyPros ECR,2026,8/13,459,Marquez Valdes-Scantling,WR,WR158,DAL,14,16,304,373,349.67,32.29,,17528,https://www.fantasypros.com/nfl/players/marquez-valdesscantling.php
+standard,FantasyPros ECR,2026,8/13,460,Kalel Mullings,RB,RB125,TEN,9,16,300,353,326.50,26.50,,27045,https://www.fantasypros.com/nfl/players/kalel-mullings.php
+standard,FantasyPros ECR,2026,8/13,461,David Sills V,WR,WR159,TB,10,16,308,349,328.50,20.50,,18566,https://www.fantasypros.com/nfl/players/david-sills.php
+standard,FantasyPros ECR,2026,8/13,462,Khalil Herbert,RB,RB126,SF,8,16,310,382,351.67,30.47,,22763,https://www.fantasypros.com/nfl/players/khalil-herbert.php
+standard,FantasyPros ECR,2026,8/13,463,Quinn Ewers,QB,QB48,MIA,6,16,311,380,352.67,29.94,,23680,https://www.fantasypros.com/nfl/players/quinn-ewers.php
+standard,FantasyPros ECR,2026,8/13,464,Josh Oliver,TE,TE72,MIN,6,16,307,354,330.50,23.50,,18487,https://www.fantasypros.com/nfl/players/josh-oliver.php
+standard,FantasyPros ECR,2026,8/13,465,Hunter Luepke,RB,RB127,DAL,14,16,300,380,340.00,40.00,,25941,https://www.fantasypros.com/nfl/players/hunter-luepke.php
+standard,FantasyPros ECR,2026,8/13,466,Myles Montgomery,RB,RB128,FA,,16,328,353,340.50,12.50,,28450,https://www.fantasypros.com/nfl/players/myles-montgomery.php
+standard,FantasyPros ECR,2026,8/13,467,Elijah Moore,WR,WR160,PHI,10,16,330,375,359.67,20.98,,20114,https://www.fantasypros.com/nfl/players/elijah-moore.php
+standard,FantasyPros ECR,2026,8/13,468,Tyler Lockett,WR,WR161,LV,13,16,299,383,341.00,42.00,,13971,https://www.fantasypros.com/nfl/players/tyler-lockett.php
+standard,FantasyPros ECR,2026,8/13,469,Van Jefferson,WR,WR162,WAS,7,16,314,373,343.50,29.50,,19483,https://www.fantasypros.com/nfl/players/van-jefferson.php
+standard,FantasyPros ECR,2026,8/13,470,Elijah Higgins,TE,TE73,ARI,14,16,352,381,366.67,11.84,,23119,https://www.fantasypros.com/nfl/players/elijah-higgins.php
+standard,FantasyPros ECR,2026,8/13,471,JuJu Smith-Schuster,WR,WR163,NYG,8,16,333,379,356.00,23.00,,16427,https://www.fantasypros.com/nfl/players/juju-smith-schuster.php
+standard,FantasyPros ECR,2026,8/13,472,Tim Patrick,WR,WR164,NYJ,13,16,327,391,359.00,32.00,,16556,https://www.fantasypros.com/nfl/players/tim-patrick.php
+standard,FantasyPros ECR,2026,8/13,473,Gardner Minshew II,QB,QB49,ARI,14,16,347,373,360.00,13.00,,18562,https://www.fantasypros.com/nfl/players/gardner-minshew.php
+standard,FantasyPros ECR,2026,8/13,474,Jaydn Ott,RB,RB129,KC,5,16,357,364,360.50,3.50,,25394,https://www.fantasypros.com/nfl/players/jaydn-ott.php
+standard,FantasyPros ECR,2026,8/13,475,Roman Hemby,RB,RB130,LV,13,16,359,363,361.00,2.00,,25387,https://www.fantasypros.com/nfl/players/roman-hemby.php
+standard,FantasyPros ECR,2026,8/13,476,Luke Schoonmaker,TE,TE74,DAL,14,16,370,381,375.00,4.55,,25267,https://www.fantasypros.com/nfl/players/luke-schoonmaker.php
+standard,FantasyPros ECR,2026,8/13,477,Miles Davis,RB,RB131,CAR,5,16,353,380,366.50,13.50,,28906,https://www.fantasypros.com/nfl/players/miles-davis.php
+standard,FantasyPros ECR,2026,8/13,478,Reggie Gilliam,RB,RB132,NE,11,16,359,377,368.00,9.00,,19844,https://www.fantasypros.com/nfl/players/reggie-gilliam.php
+standard,FantasyPros ECR,2026,8/13,479,Jaret Patterson,RB,RB133,LAC,7,16,357,392,374.50,17.50,,20155,https://www.fantasypros.com/nfl/players/jaret-patterson.php
