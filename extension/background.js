@@ -32,6 +32,86 @@ let context = {
   lastUpdated: null
 };
 
+const FANTASY_SEASON_YEAR = 2026;
+const FFA_CURRENT_ROOKIE_EXPERIENCE = 1;
+
+function firstDefined(row, keys) {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== null && row[key] !== '') return row[key];
+  }
+  return undefined;
+}
+
+function toNumber(value) {
+  if (value === undefined || value === null || value === '') return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function getGlobalQualityTier(row) {
+  const overallRank = toNumber(firstDefined(row, ['rank_overall', 'Rank - Overall', 'overall_rank', 'rank', 'display_rank', 'Display Rank', 'ranking']));
+  const vor = toNumber(firstDefined(row, ['vor', 'VOR']));
+
+  if (overallRank !== null) {
+    if (overallRank <= 12) return 1;
+    if (overallRank <= 36) return 2;
+    if (overallRank <= 72) return 3;
+    if (overallRank <= 120) return 4;
+    return 5;
+  }
+
+  if (vor !== null) {
+    if (vor >= 80) return 1;
+    if (vor >= 40) return 2;
+    if (vor >= 10) return 3;
+    if (vor >= -20) return 4;
+  }
+
+  return 5;
+}
+
+function getFfaExperience(row) {
+  return toNumber(firstDefined(row, ['experience', 'Experience']));
+}
+
+function getRookieFlag(row) {
+  return getFfaExperience(row) === FFA_CURRENT_ROOKIE_EXPERIENCE ? 1 : 0;
+}
+
+function getExperienceClass(row) {
+  const experience = getFfaExperience(row);
+  if (experience === FFA_CURRENT_ROOKIE_EXPERIENCE) return 'current_rookie';
+  if (experience === 2) return 'second_year';
+  if (experience === 0) return 'future_or_unknown';
+  if (experience !== null) return 'veteran';
+  return 'unknown';
+}
+
+function buildSourcePositionTierLabel(position, sourceTier) {
+  if (position === undefined || sourceTier === undefined) return null;
+  return `${position} positional tier ${sourceTier}`;
+}
+
+function insertBeforeLastUserMessage(messages, message) {
+  const lastUserIndex = messages.map(m => m.role).lastIndexOf('user');
+  if (lastUserIndex === -1) return [...messages, message];
+  return [
+    ...messages.slice(0, lastUserIndex),
+    message,
+    ...messages.slice(lastUserIndex)
+  ];
+}
+
+function getGlobalQualityLabel(globalTier) {
+  return {
+    1: 'elite',
+    2: 'strong',
+    3: 'solid',
+    4: 'replacement',
+    5: 'avoid'
+  }[globalTier] || 'avoid';
+}
+
 // Handle messages from content script and popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('📨 Background received message:', request.type);
@@ -440,39 +520,55 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
         name: ds.name,
         // Include all rows but compress format
         data: (ds.rows || []).map(row => {
-          // Extract player name
-          let playerName = null;
-          ['player', 'name', 'player_name', 'full_name'].forEach(col => {
-            if (row[col] !== undefined && !playerName) playerName = row[col];
-          });
+          const playerName = firstDefined(row, ['player', 'Player', 'name', 'player_name', 'full_name']);
           
           if (!playerName) return null;
           
           // Build compact row with abbreviated keys
           const compact = { n: playerName };
           
-          // Add position
-          ['position', 'pos'].forEach(col => {
-            if (row[col] !== undefined && !compact.p) compact.p = row[col];
-          });
+          // Add position. FFA exports use "Position Bucket".
+          const position = firstDefined(row, ['position', 'Position Bucket', 'position_bucket', 'pos']);
+          if (position !== undefined) compact.p = position;
           
           // Add rank/tier/points (all that exist)
-          if (row.rank !== undefined) compact.r = row.rank;
-          else if (row.overall_rank !== undefined) compact.r = row.overall_rank;
-          else if (row.ranking !== undefined) compact.r = row.ranking;
+          const overallRank = firstDefined(row, ['rank_overall', 'Rank - Overall', 'overall_rank', 'rank', 'display_rank', 'Display Rank', 'ranking']);
+          if (overallRank !== undefined) compact.r = overallRank;
           
-          if (row.tier !== undefined) compact.t = row.tier;
-          if (row.points !== undefined) compact.pts = Math.round(row.points);
-          else if (row.projection !== undefined) compact.pts = Math.round(row.projection);
-          else if (row.proj !== undefined) compact.pts = Math.round(row.proj);
+          const positionRank = firstDefined(row, ['rank_position', 'Rank - Position']);
+          if (positionRank !== undefined) compact.pr = positionRank;
+          const sourceTier = firstDefined(row, ['tier', 'Tier']);
+          const sourcePositionTierLabel = buildSourcePositionTierLabel(position, sourceTier);
+          if (sourcePositionTierLabel) compact.spt = sourcePositionTierLabel;
+          compact.gt = getGlobalQualityTier(row);
+          compact.gl = getGlobalQualityLabel(compact.gt);
+          const points = toNumber(firstDefined(row, ['points', 'Points', 'projection', 'proj']));
+          if (points !== null) compact.pts = Math.round(points);
           
           // Add team if available
-          if (row.team !== undefined) compact.tm = row.team;
-          else if (row.tm !== undefined) compact.tm = row.tm;
+          const team = firstDefined(row, ['team', 'Team', 'tm']);
+          if (team !== undefined) compact.tm = team;
           
           // Add any other important numeric fields (ADP, value, etc)
-          if (row.adp !== undefined) compact.adp = row.adp;
+          const adp = firstDefined(row, ['adp', 'ADP']);
+          if (adp !== undefined) compact.adp = adp;
+          const ecr = firstDefined(row, ['ecr', 'ECR']);
+          if (ecr !== undefined) compact.ecr = ecr;
+          const vor = firstDefined(row, ['vor', 'VOR']);
+          if (vor !== undefined) compact.vor = vor;
+          const uncertainty = firstDefined(row, ['uncertainty', 'Uncertainty']);
+          if (uncertainty !== undefined) compact.unc = uncertainty;
+          const floor = firstDefined(row, ['floor', 'Floor']);
+          if (floor !== undefined) compact.fl = floor;
+          const ceiling = firstDefined(row, ['ceiling', 'Ceiling']);
+          if (ceiling !== undefined) compact.ce = ceiling;
           if (row.value !== undefined) compact.v = row.value;
+          const experience = getFfaExperience(row);
+          if (experience !== null) {
+            compact.exp = experience;
+            compact.rookie = getRookieFlag(row);
+            compact.xc = getExperienceClass(row);
+          }
           
           return compact;
         }).filter(row => row !== null)
@@ -507,17 +603,24 @@ async function handleOpenAIRequest(requestData, sendResponse, messageId) {
       }
     ];
 
-    const systemPrompt = `Fantasy draft assistant. Give ONE clear recommendation with data, unless the player asks for more suggestions.
-Format: "PICK: [Player] - [1-2 key stats/reasons]"
+    const systemPrompt = `Fantasy draft assistant for the ${FANTASY_SEASON_YEAR} fantasy football season with full live draft context.
+For direct pick questions, give ONE clear recommendation with data unless the player asks for more suggestions.
+Format direct pick answers as: "PICK: [Player] - [1-2 key stats/reasons]"
+For strategy/chat questions between picks, answer conversationally using the same draft context; do not force a PICK line.
 NEVER recommend from CONTEXT.allUnavailable list. Don't mention unavailable players.
-Use CONTEXT.csvData rankings if available (n=name, r=rank, t=tier, pts=points).
+Use CONTEXT.csvData rankings if available (n=name, p=position, r=overall rank, pr=position rank, gt=normalized global quality tier, gl=global quality label, spt=source positional tier label, pts=points, adp=ADP, ecr=ECR, vor=value over replacement, unc=uncertainty, fl=floor, ce=ceiling, exp=FFA experience, rookie=1 only for ${FANTASY_SEASON_YEAR} rookies, xc=experience class).
+When discussing recommendation quality, use gt/gl, not pt. Global quality tiers mean: Tier 1 elite/smash, Tier 2 strong, Tier 3 solid/fine, Tier 4 replacement-ish, Tier 5 avoid/deep only.
+FFA source tiers are position-specific and appear only as spt strings like "WR positional tier 5". Never turn spt into a generic recommendation tier.
+Rookie rules for ${FANTASY_SEASON_YEAR}: in this FFA export, rookie=1/xc=current_rookie/exp=1 means current-season rookie. exp=2 means second-year/last year's rookie class and must not be called rookie. exp=0 is future, devy, DST, or unknown; do not call exp=0 a current NFL rookie unless current news confirms it.
 ADP = average draft position (ie 5.06 means 5th round, 6th pick).`;
 
-    let messages = [
+    const historyGuardPrompt = `Treat any prior chat/image-analysis statements about generic "Tier N" or "rookie" status as stale unless confirmed by the latest CONTEXT.csvData. In the latest context, only gt/gl are recommendation-quality tiers; spt is only a source positional tier label. For rookies, only rookie=1/xc=current_rookie/exp=1 is a current ${FANTASY_SEASON_YEAR} rookie; exp=2 is second-year, not rookie.`;
+
+    let messages = insertBeforeLastUserMessage([
       { role: 'system', content: systemPrompt },
       { role: 'system', content: `CONTEXT: ${JSON.stringify(compactContext)}` },
       ...requestData.messages
-    ];
+    ], { role: 'system', content: historyGuardPrompt });
 
     // Determine if it's a GPT-5 model
     const isGPT5Model = modelForApi.includes('gpt-5') || modelForApi.includes('gpt5');

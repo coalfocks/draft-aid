@@ -8,7 +8,7 @@
     "server": "nodemon server.js",
     "start": "node server.js",
     "validate": "node --check server.js && node --check routes/openai.js && node --check routes/draft.js && node --check services/espnService.js && node --check extension/background.js && node --check extension/content.js && node --check extension/popup.js",
-    "test": "npm run validate && node tests/content-extraction.test.js"
+    "test": "npm run validate && node tests/content-extraction.test.js && node tests/background-ranking-context.test.js"
   },
   "dependencies": {
     "axios": "^1.18.1",
