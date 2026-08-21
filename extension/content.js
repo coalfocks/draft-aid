@@ -9,6 +9,14 @@ let draftData = {
   userRoster: []
 };
 
+let extensionContextInvalidated = false;
+let picksListObserver = null;
+let observedPicksList = null;
+let draftObserver = null;
+let mainObserver = null;
+let isInitialized = false;
+let extractionInterval = null;
+
 const POSITION_PATTERN = /\b(QB|RB|WR|TE|K|DEF|DST|D\/ST)\b/;
 const KNOWN_NFL_ABBRS = new Set([
   'ARI', 'ATL', 'BAL', 'BUF', 'CAR', 'CHI', 'CIN', 'CLE', 'DAL', 'DEN',
@@ -16,6 +24,51 @@ const KNOWN_NFL_ABBRS = new Set([
   'MIN', 'NE', 'NO', 'NYG', 'NYJ', 'PHI', 'PIT', 'SEA', 'SF', 'TB',
   'TEN', 'WAS'
 ]);
+
+function isExtensionContextInvalidatedError(error) {
+  return /extension context invalidated/i.test(error?.message || String(error || ''));
+}
+
+function shutdownAfterExtensionInvalidated(error) {
+  if (extensionContextInvalidated) return;
+  extensionContextInvalidated = true;
+
+  console.warn('⚠️ Fantasy Draft Assistant extension context invalidated; refresh the ESPN page after reloading the extension.', error);
+
+  try { picksListObserver?.disconnect(); } catch {}
+  try { mainObserver?.disconnect(); } catch {}
+  try { draftObserver?.disconnect(); } catch {}
+
+  if (extractionInterval) {
+    clearInterval(extractionInterval);
+    extractionInterval = null;
+  }
+}
+
+function sendRuntimeMessage(message, options = {}) {
+  if (extensionContextInvalidated) return Promise.resolve(null);
+
+  let sendPromise;
+  try {
+    sendPromise = chrome.runtime.sendMessage(message);
+  } catch (error) {
+    if (isExtensionContextInvalidatedError(error)) {
+      shutdownAfterExtensionInvalidated(error);
+      return Promise.resolve(null);
+    }
+    if (!options.silent) console.warn('Failed to send runtime message:', error);
+    return Promise.resolve(null);
+  }
+
+  return Promise.resolve(sendPromise).catch(error => {
+    if (isExtensionContextInvalidatedError(error)) {
+      shutdownAfterExtensionInvalidated(error);
+    } else if (!options.silent) {
+      console.warn('Failed to send runtime message:', error);
+    }
+    return null;
+  });
+}
 
 function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -79,11 +132,6 @@ function dedupeTeams(teams) {
     return true;
   });
 }
-
-// Focused observer for the picks list to catch updates instantly
-let picksListObserver = null;
-let observedPicksList = null;
-let draftObserver = null;
 
 // Extract league ID from URL
 function extractLeagueId() {
@@ -595,10 +643,10 @@ function updateDraftState(picks) {
   draftData.currentPick = picks.length + 1;
   console.log(`📊 Picks replaced: ${prevCount} -> ${picks.length}`);
 
-  chrome.runtime.sendMessage({
+  sendRuntimeMessage({
     type: 'REPLACE_PICKS',
     data: picks
-  }).catch(() => {});
+  }, { silent: true });
 }
 
 // Alternative: Extract from draft results/completed picks
@@ -617,9 +665,6 @@ function extractCompletedPicks() {
     }
   });
 }
-
-// Monitor for DOM changes (real-time pick detection)
-let mainObserver = null;
 
 function createMainObserver() {
   if (mainObserver) {
@@ -674,10 +719,11 @@ function initialize() {
   console.log('📊 Final data state:', draftData);
   
   // Send initial data to popup
-  chrome.runtime.sendMessage({
+  sendRuntimeMessage({
     type: 'INIT_DATA',
     data: draftData
   }).then(() => {
+    if (extensionContextInvalidated) return;
     console.log('✅ Data sent to popup successfully');
   }).catch(error => {
     console.error('❌ Failed to send data to popup:', error);
@@ -685,7 +731,8 @@ function initialize() {
 }
 
 // Handle messages from popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+try {
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   console.log('📨 Content script received message:', request.type);
   
   if (request.type === 'GET_DRAFT_DATA') {
@@ -726,7 +773,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ success: false, message: 'DOM inspector not available' });
     }
   }
-});
+  });
+} catch (error) {
+  if (isExtensionContextInvalidatedError(error)) {
+    shutdownAfterExtensionInvalidated(error);
+  } else {
+    console.warn('Failed to register content script message listener:', error);
+  }
+}
 
 // Get most common class names on the page (for debugging)
 function getCommonClasses() {
@@ -749,10 +803,8 @@ function getCommonClasses() {
 }
 
 // Handle page navigation/refresh
-let isInitialized = false;
-let extractionInterval;
-
 function ensureInitialized() {
+  if (extensionContextInvalidated) return;
   console.log('🔄 Ensuring initialization...');
   initialize();
   isInitialized = true;
@@ -769,6 +821,12 @@ function startContinuousMonitoring() {
   
   // Check for new data every 5 seconds
   extractionInterval = setInterval(() => {
+    if (extensionContextInvalidated) {
+      clearInterval(extractionInterval);
+      extractionInterval = null;
+      return;
+    }
+
     console.log('🔍 Periodic check for draft updates...');
     
     const previousPickCount = draftData.picks.length;
@@ -789,12 +847,10 @@ function startContinuousMonitoring() {
     
     // Send update if anything changed
     if (draftData.picks.length > previousPickCount || draftData.userRoster.length !== previousRosterCount) {
-      chrome.runtime.sendMessage({
+      sendRuntimeMessage({
         type: 'DRAFT_UPDATE',
         data: draftData
-      }).catch(() => {
-        // Background script might not be ready, that's okay
-      });
+      }, { silent: true });
     }
     
     // Also check if draft column appeared (for dynamic loading)
@@ -833,6 +889,8 @@ setInterval(() => {
 
 // Listen for page visibility changes
 document.addEventListener('visibilitychange', () => {
+  if (extensionContextInvalidated) return;
+
   if (document.visibilityState === 'visible') {
     console.log('👁️ Page became visible, checking for updates...');
     setTimeout(() => {
