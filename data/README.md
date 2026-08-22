@@ -1,6 +1,6 @@
 # Draft Projection Data
 
-Generated from a logged-in Fantasy Football Analytics browser session on 2026-08-13.
+Generated from a logged-in Fantasy Football Analytics browser session on 2026-08-22.
 
 ## Files
 
@@ -15,10 +15,10 @@ Generated from a logged-in Fantasy Football Analytics browser session on 2026-08
 - TE: 36
 - K: 32
 - DST: 32
-- DL: 91
+- DL: 89
 - LB: 62
-- DB: 63
+- DB: 62
 
-Total: 498 rows.
+Total: 495 rows.
 
-Some duplicate player/team rows are present in the FFA table response itself, especially for IDP. The export keeps raw rows intact rather than deduping or guessing which ECR value should win.
+Some duplicate player/team rows may be present in the FFA table response itself, especially for IDP. The export keeps raw rows intact rather than deduping or guessing which ECR value should win.
